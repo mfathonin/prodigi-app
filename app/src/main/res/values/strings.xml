@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Prodigi Book Reader</string>
+    <string name="internal_content_title">Digital Content</string>
+    <string name="external_content_title">Scan Result</string>
+    <string name="url_link_button">Open Link</string>
+    <string name="welcome_instruction">Hover over QR Code to scan it</string>
 </resources>
