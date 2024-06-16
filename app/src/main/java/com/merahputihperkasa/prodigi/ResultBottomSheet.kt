@@ -14,28 +14,33 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.merahputihperkasa.prodigi.utils.copyToClipboard
+import com.merahputihperkasa.prodigi.utils.isValidURi
+import com.merahputihperkasa.prodigi.utils.openUrl
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultBottomSheet(
-    result: String,
-    onDismissRequest: () -> Unit,
-    sheetState: SheetState
+    result: String, onDismissRequest: () -> Unit, sheetState: SheetState,
 ) {
+    val isValidUrl = isValidURi(result)
+    // TODO: This need to be more configurable from remote or centralized config
+    val isInternalSources = isValidUrl && result.contains("mpp-hub.netlify.app/links")
+
     ModalBottomSheet(
         onDismissRequest = { onDismissRequest() },
         sheetState = sheetState
     ) {
         val scope = rememberCoroutineScope()
-        val isExternalSources = !result.contains("mpp-hub.netlify.app/links")
         var titleId = R.string.internal_content_title
-        if (isExternalSources) {
+        if (!isInternalSources) {
             titleId = R.string.external_content_title
         }
 
@@ -44,8 +49,7 @@ fun ResultBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 32.dp),
-
-                ) {
+            ) {
                 Text(
                     text = stringResource(titleId),
                     style = TextStyle(
@@ -56,16 +60,17 @@ fun ResultBottomSheet(
                         .fillMaxWidth()
                         .padding(bottom = 24.dp),
                 )
-                if (isExternalSources) {
+                if (!isInternalSources) {
                     Column(Modifier.fillMaxWidth()) {
-                        Text(
-                            text = result,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        )
+                        val context = LocalContext.current
+                        Text(text = result, modifier = Modifier.fillMaxWidth())
                         Button(
                             onClick = {
-                                /*TODO*/
+                                if (isValidUrl)
+                                    openUrl(context, result)
+                                else
+                                    copyToClipboard(context, result)
+
                                 scope.launch {
                                     sheetState.hide()
                                     onDismissRequest.invoke()
@@ -75,7 +80,7 @@ fun ResultBottomSheet(
                                 .fillMaxWidth()
                                 .offset(y = 16.dp),
                         ) {
-                            if (result.contains("https://")) {
+                            if (isValidUrl) {
                                 Text(
                                     text = stringResource(R.string.url_link_button),
                                     color = Color.White
@@ -89,11 +94,8 @@ fun ResultBottomSheet(
                         }
                     }
                 } else {
-                    Text(
-                        text = "Redirecting to: $result",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
+                    // TODO: Render list items
+                    Text(text = "Redirecting to: $result", modifier = Modifier.fillMaxWidth())
                 }
             }
         }
