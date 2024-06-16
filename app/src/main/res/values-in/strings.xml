@@ -3,6 +3,7 @@
     <string name="app_name">Prodigi Book Reader</string>
     <string name="internal_content_title">Konten Digital</string>
     <string name="external_content_title">Hasil Scan</string>
-    <string name="url_link_button">Buka Tautan</string>
+    <string name="url_link_button">Buka tautan</string>
     <string name="welcome_instruction">Arahkan kamera pada QR Code untuk memindai</string>
+    <string name="content_link_button">Salin data</string>
 </resources>

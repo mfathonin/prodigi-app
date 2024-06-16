@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -62,20 +63,28 @@ fun ResultBottomSheet(
                             modifier = Modifier
                                 .fillMaxWidth()
                         )
-                        if (result.contains("https://")) {
-                            Button(
-                                onClick = {
-                                    /*TODO*/
-                                    scope.launch {
-                                        sheetState.hide()
-                                        onDismissRequest.invoke()
-                                    }
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .offset(y = 16.dp)
-                            ) {
-                                Text(text = stringResource(R.string.url_link_button))
+                        Button(
+                            onClick = {
+                                /*TODO*/
+                                scope.launch {
+                                    sheetState.hide()
+                                    onDismissRequest.invoke()
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .offset(y = 16.dp),
+                        ) {
+                            if (result.contains("https://")) {
+                                Text(
+                                    text = stringResource(R.string.url_link_button),
+                                    color = Color.White
+                                )
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.content_link_button),
+                                    color = Color.White
+                                )
                             }
                         }
                     }
