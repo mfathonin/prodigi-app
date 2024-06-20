@@ -6,4 +6,6 @@
     <string name="url_link_button">Buka tautan</string>
     <string name="welcome_instruction">Arahkan kamera pada QR Code untuk memindai</string>
     <string name="content_link_button">Salin data</string>
+    <string name="fetch_content_error">Gagal memuat konten digital</string>
+    <string name="retry_button">Coba lagi</string>
 </resources>
