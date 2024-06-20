@@ -19,6 +19,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.budiyev.android.codescanner.CodeScanner
+import com.merahputihperkasa.prodigi.ui.components.CameraView
+import com.merahputihperkasa.prodigi.ui.components.ResultBottomSheet
 import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 
 class MainActivity : ComponentActivity() {

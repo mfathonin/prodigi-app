@@ -1,4 +1,4 @@
-package com.merahputihperkasa.prodigi
+package com.merahputihperkasa.prodigi.ui.components
 
 import android.content.Context
 import androidx.compose.foundation.layout.Box
@@ -20,14 +20,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.merahputihperkasa.prodigi.R
 import com.merahputihperkasa.prodigi.data.ProdigiRepositoryImpl
 import com.merahputihperkasa.prodigi.models.Content
 import com.merahputihperkasa.prodigi.network.ApiResult
 import com.merahputihperkasa.prodigi.network.RetrofitInstance
+import com.merahputihperkasa.prodigi.ui.theme.Secondary800
+import com.merahputihperkasa.prodigi.ui.theme.Typography
 import com.merahputihperkasa.prodigi.utils.copyToClipboard
 import com.merahputihperkasa.prodigi.utils.isValidURi
 import com.merahputihperkasa.prodigi.utils.openUrl
@@ -80,13 +80,7 @@ fun ResultBottomSheet(
             ) {
                 Text(
                     text = stringResource(titleId),
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 24.dp),
+                    style = Typography.titleLarge,
                 )
                 if (!isInternalSources) {
                     Column(Modifier.fillMaxWidth()) {
@@ -118,12 +112,16 @@ fun ResultBottomSheet(
                 } else {
                     when (contentResult.value) {
                         is ApiResult.Loading -> {
-                            Text("Loading data")
+                            // TODO: Add loading animation here
+                            Text("Loading data", modifier = Modifier.padding(top = 24.dp))
                         }
 
                         is ApiResult.Error -> {
                             Column {
-                                Text(stringResource(R.string.fetch_content_error))
+                                Text(
+                                    stringResource(R.string.fetch_content_error),
+                                    modifier = Modifier.padding(top = 24.dp)
+                                )
                                 Button(
                                     onClick = {
                                         scope.launch {
@@ -142,9 +140,22 @@ fun ResultBottomSheet(
                         }
 
                         is ApiResult.Success -> {
+                            Text(
+                                stringResource(id = R.string.subtitle_content_list),
+                                style = Typography.labelSmall,
+                                color = Secondary800,
+                                modifier = Modifier.padding(bottom = 24.dp, top = 4.dp)
+                            )
                             val data = (contentResult.value as ApiResult.Success).data
                             data?.forEach { content ->
-                                Text("${content.collection.name}: ${content.title}")
+                                ContentCardView(content) {
+                                    scope.launch {
+                                        sheetState.hide()
+                                        onDismissRequest.invoke()
+
+                                        // TODO: Record to history
+                                    }
+                                }
                             }
                         }
                     }
@@ -160,6 +171,7 @@ private suspend fun fetchContents(
     contentId: String,
     content: MutableStateFlow<ApiResult<List<Content>>>,
 ) {
+    content.update { ApiResult.Loading() }
     prodigiRepository.getDigitalContents(context, contentId)
         .collectLatest { result ->
             content.update { result }

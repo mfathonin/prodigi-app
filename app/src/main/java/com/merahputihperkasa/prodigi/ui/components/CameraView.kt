@@ -1,4 +1,4 @@
-package com.merahputihperkasa.prodigi
+package com.merahputihperkasa.prodigi.ui.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +29,7 @@ import com.budiyev.android.codescanner.CodeScannerView
 import com.budiyev.android.codescanner.DecodeCallback
 import com.budiyev.android.codescanner.ErrorCallback
 import com.budiyev.android.codescanner.ScanMode
+import com.merahputihperkasa.prodigi.R
 import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 
 @Composable

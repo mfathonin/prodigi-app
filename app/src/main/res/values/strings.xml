@@ -7,4 +7,5 @@
     <string name="content_link_button">Salin data</string>
     <string name="retry_button">Coba lagi</string>
     <string name="fetch_content_error">Gagal memuat konten digital</string>
+    <string name="subtitle_content_list">Pilih konten digital yang ingin dibuka</string>
 </resources>
