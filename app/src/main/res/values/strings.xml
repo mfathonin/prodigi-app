@@ -1,10 +1,10 @@
 <resources>
-    <string name="app_name">Prodigi Book Reader</string>
-    <string name="internal_content_title">Digital Content</string>
-    <string name="external_content_title">Scan Result</string>
-    <string name="url_link_button">Open link</string>
-    <string name="welcome_instruction">Hover over QR Code to scan it</string>
-    <string name="content_link_button">Copy value</string>
-    <string name="retry_button">Retry</string>
-    <string name="fetch_content_error">Fetching digital content failed</string>
+    <string name="app_name" translatable="false">Prodigi Book Reader</string>
+    <string name="internal_content_title">Konten Digital</string>
+    <string name="external_content_title">Hasil Scan</string>
+    <string name="url_link_button">Buka tautan</string>
+    <string name="welcome_instruction">Arahkan kamera pada QR Code untuk memindai</string>
+    <string name="content_link_button">Salin data</string>
+    <string name="retry_button">Coba lagi</string>
+    <string name="fetch_content_error">Gagal memuat konten digital</string>
 </resources>
