@@ -1,4 +1,4 @@
-package com.merahputihperkasa.prodigi.network
+package com.merahputihperkasa.prodigi.repository.network
 
 import com.merahputihperkasa.prodigi.models.DigitalContentResult
 import retrofit2.http.GET

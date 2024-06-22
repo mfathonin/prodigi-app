@@ -1,4 +1,4 @@
-package com.merahputihperkasa.prodigi.network
+package com.merahputihperkasa.prodigi.repository.network
 
 sealed class ApiResult<T>(
     val data: T? = null,

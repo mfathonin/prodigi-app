@@ -1,8 +1,8 @@
-package com.merahputihperkasa.prodigi.data
+package com.merahputihperkasa.prodigi.repository
 
 import android.content.Context
 import com.merahputihperkasa.prodigi.models.Content
-import com.merahputihperkasa.prodigi.network.ApiResult
+import com.merahputihperkasa.prodigi.repository.network.ApiResult
 import kotlinx.coroutines.flow.Flow
 
 interface ProdigiRepository {
