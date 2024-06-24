@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -31,7 +32,6 @@ import com.merahputihperkasa.prodigi.models.ContentEntity
 import com.merahputihperkasa.prodigi.repository.LoadDataStatus
 import com.merahputihperkasa.prodigi.repository.ProdigiRepositoryImpl
 import com.merahputihperkasa.prodigi.ui.theme.Secondary800
-import com.merahputihperkasa.prodigi.ui.theme.Typography
 import com.merahputihperkasa.prodigi.utils.copyToClipboard
 import com.merahputihperkasa.prodigi.utils.isValidURi
 import com.merahputihperkasa.prodigi.utils.openUrl
@@ -84,7 +84,7 @@ fun ResultBottomSheet(
             ) {
                 Text(
                     text = stringResource(titleId),
-                    style = Typography.titleLarge,
+                    style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
                 if (!isInternalSources) {
@@ -157,7 +157,7 @@ fun ResultBottomSheet(
                             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                                 Text(
                                     stringResource(id = R.string.subtitle_content_list),
-                                    style = Typography.labelSmall,
+                                    style = MaterialTheme.typography.labelLarge,
                                     color = Secondary800,
                                     modifier = Modifier.padding(bottom = 24.dp, top = 4.dp)
                                 )

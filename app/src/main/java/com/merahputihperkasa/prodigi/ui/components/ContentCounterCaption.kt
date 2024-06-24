@@ -13,7 +13,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.merahputihperkasa.prodigi.R
-import com.merahputihperkasa.prodigi.ui.theme.Typography
 
 @Composable
 fun ContentsCounterCaption(
@@ -29,10 +28,8 @@ fun ContentsCounterCaption(
     ) {
         Text(
             text = stringResource(R.string.list_counter_caption, dataCount),
-            style = Typography.labelSmall.copy(
-                fontStyle = FontStyle.Italic,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-            )
+            style = MaterialTheme.typography.labelSmall.copy(fontStyle = FontStyle.Italic),
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )
     }
 }

@@ -26,7 +26,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.merahputihperkasa.prodigi.R
 import com.merahputihperkasa.prodigi.ui.theme.Surface400
 
@@ -62,14 +61,19 @@ fun SearchField(
             onValueChange = onValueChange,
             singleLine = true,
             maxLines = 1,
-            textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+            textStyle = MaterialTheme.typography.bodyLarge,
             decorationBox = @Composable { innerTextField ->
                 OutlinedTextFieldDefaults.DecorationBox(
                     value = value,
                     visualTransformation = visualTransformation,
                     innerTextField = innerTextField,
                     colors = colors,
-                    placeholder = { Text(stringResource(R.string.search_hint)) },
+                    placeholder = {
+                        Text(
+                            stringResource(R.string.search_hint),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
                     singleLine = true,
                     enabled = true,
                     interactionSource = interactionSource,
@@ -88,11 +92,14 @@ fun SearchField(
                                 .clip(CircleShape)
                                 .background(Surface400)
                                 .padding(vertical = 6.dp)
-                                .padding(horizontal = 10.dp)
-                            ,
+                                .padding(horizontal = 10.dp),
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Icon(Icons.Filled.Search, contentDescription = "Search")
+                            Icon(
+                                Icons.Filled.Search,
+                                contentDescription = "Search",
+                                tint = Color.LightGray
+                            )
                         }
                     }
                 )

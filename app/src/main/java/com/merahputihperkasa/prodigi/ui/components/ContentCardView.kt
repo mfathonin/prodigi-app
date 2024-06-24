@@ -13,15 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.merahputihperkasa.prodigi.models.Collection
 import com.merahputihperkasa.prodigi.models.Content
 import com.merahputihperkasa.prodigi.models.Link
-import com.merahputihperkasa.prodigi.ui.theme.OnPrimary
 import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 import com.merahputihperkasa.prodigi.ui.theme.Secondary400
-import com.merahputihperkasa.prodigi.ui.theme.Typography
 import com.merahputihperkasa.prodigi.utils.openUrl
 
 @Composable
@@ -52,8 +51,17 @@ fun ContentCardView(
             }
             .padding(16.dp)
     ) {
-        Text(collection, style = Typography.labelSmall, color = textColor, modifier = Modifier.padding(bottom = 4.dp))
-        Text(title, style = Typography.titleLarge, color = textColor)
+        Text(
+            title,
+            style = MaterialTheme.typography.bodyLarge
+                .copy(fontWeight = FontWeight.Bold),
+            color = textColor
+        )
+        Text(
+            collection,
+            style = MaterialTheme.typography.labelMedium,
+            color = textColor.copy(0.8f),
+        )
     }
 }
 

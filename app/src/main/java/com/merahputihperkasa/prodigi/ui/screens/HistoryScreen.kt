@@ -61,7 +61,6 @@ import com.merahputihperkasa.prodigi.ui.components.ContentsCounterCaption
 import com.merahputihperkasa.prodigi.ui.components.SearchField
 import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 import com.merahputihperkasa.prodigi.ui.theme.Surface400
-import com.merahputihperkasa.prodigi.ui.theme.Typography
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
@@ -251,7 +250,8 @@ fun <T> ErrorState(
         error.message?.let { msg ->
             Text(
                 "Code: $msg", color = Color.Black.copy(alpha = 0.5f),
-                style = Typography.labelSmall.copy(fontStyle = FontStyle.Italic)
+                style = MaterialTheme.typography.labelSmall
+                    .copy(fontStyle = FontStyle.Italic)
             )
         }
     }
