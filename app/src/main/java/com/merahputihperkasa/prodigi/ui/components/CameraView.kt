@@ -3,9 +3,7 @@ package com.merahputihperkasa.prodigi.ui.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -16,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,13 +42,27 @@ fun CameraView(
         mutableStateOf<CodeScanner?>(null)
     }
 
+    val configuration = LocalConfiguration.current
+    val screenW = configuration.screenWidthDp
+    val screenH = configuration.screenHeightDp
+
+    val scannerFrameSize = 0.65f
+    val scannerVerticalBias = 0.25f
+    val realFrameSize = if (screenW > screenH) { // Landscape
+        scannerFrameSize * screenH
+    } else { // Portrait
+        scannerFrameSize * screenW
+    }
+
+    val hintOffsetY = ((screenH * scannerVerticalBias) + (realFrameSize * 0.85f)).toInt()
+
     Box(modifier.fillMaxSize()) {
         AndroidView(
             factory = {
                 CodeScannerView(it).apply {
                     frameCornersRadius = 50
-                    frameSize = 0.7f
-                    frameVerticalBias = 0.25f
+                    frameSize = scannerFrameSize
+                    frameVerticalBias = scannerVerticalBias
 
                     val cs = CodeScanner(it, this).apply {
                         isAutoFocusEnabled = true
@@ -74,14 +87,13 @@ fun CameraView(
         )
         Box(
             modifier = Modifier
-                .fillMaxWidth(0.65f)
-                .height(64.dp)
-                .wrapContentSize(Alignment.TopCenter)
-                .align(Alignment.Center)
-                .offset(y = 64.dp)
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .offset(y = hintOffsetY.dp)
         ) {
             Text(
                 text = stringResource(R.string.welcome_instruction),
+                modifier = Modifier.fillMaxWidth(0.65f).align(Alignment.Center),
                 textAlign = TextAlign.Center,
                 color = Color.White
             )
