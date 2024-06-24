@@ -148,8 +148,8 @@ fun HistoryScreen(navController: NavController, modifier: Modifier = Modifier) {
                     .fillMaxSize()
             ) {
                 SearchField(
-                    searchValue = searchValue,
-                    modifier = Modifier.background(topAppBarContainerColor),
+                    value = searchValue,
+                    modifier = Modifier.background(topAppBarContainerColor)
                 ) { value -> searchValue = value }
                 if (contentList.value is LoadDataStatus.Success) {
                     ContentsCounterCaption(topAppBarContainerColor, dataCount)
