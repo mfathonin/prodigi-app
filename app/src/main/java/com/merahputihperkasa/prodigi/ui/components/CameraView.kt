@@ -16,7 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.budiyev.android.codescanner.CodeScanner
 import com.budiyev.android.codescanner.CodeScannerView
 import com.budiyev.android.codescanner.DecodeCallback
@@ -36,7 +36,7 @@ import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 fun CameraView(
     modifier: Modifier = Modifier,
     onInitialized: (codeScanner: CodeScanner) -> Unit,
-    onScanned: (String) -> Unit
+    onScanned: (String) -> Unit,
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     var codeScanner by remember {

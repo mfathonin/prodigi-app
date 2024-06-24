@@ -24,3 +24,10 @@ data class ContentEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 )
+
+fun ContentEntity.toContent() = Content(
+    id = contentId,
+    title = title,
+    collection = Collection(name = collectionName),
+    link = Link(url = contentKey, targetUrl = targetLink)
+)

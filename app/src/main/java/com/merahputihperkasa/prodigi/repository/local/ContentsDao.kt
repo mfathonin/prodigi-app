@@ -16,7 +16,10 @@ interface ContentsDao {
     suspend fun deleteContent(content: ContentEntity)
 
     @Query("SELECT * FROM contents")
-    fun getContents(): Flow<List<ContentEntity>>
+    suspend fun getContents(): List<ContentEntity>
+
+    @Query("SELECT * FROM contents WHERE title LIKE '%' || :filter || '%' OR collection_name LIKE '%' || :filter || '%' OR content_key LIKE '%' || :filter || '%'")
+    suspend fun getContentsWithFilter(filter: String): List<ContentEntity>
 
     @Query("SELECT * FROM contents WHERE content_key = :contentKey")
     suspend fun getContentByContentKey(contentKey: String): ContentEntity

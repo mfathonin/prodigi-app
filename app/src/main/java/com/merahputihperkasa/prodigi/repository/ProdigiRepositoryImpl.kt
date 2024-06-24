@@ -3,18 +3,17 @@ package com.merahputihperkasa.prodigi.repository
 import android.content.Context
 import android.util.Log
 import com.merahputihperkasa.prodigi.AppModule
-import com.merahputihperkasa.prodigi.models.Collection
 import com.merahputihperkasa.prodigi.models.Content
-import com.merahputihperkasa.prodigi.models.Link
+import com.merahputihperkasa.prodigi.models.ContentEntity
+import com.merahputihperkasa.prodigi.models.toContent
 import com.merahputihperkasa.prodigi.repository.local.ContentsDatabase
-import com.merahputihperkasa.prodigi.repository.network.ApiResult
 import com.merahputihperkasa.prodigi.repository.network.ProdigiApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import okio.IOException
 
 class ProdigiRepositoryImpl(
-    private val module: AppModule,
+    module: AppModule,
 ) : ProdigiRepository {
     private val api: ProdigiApi = module.api
     private val db: ContentsDatabase = module.db
@@ -22,9 +21,9 @@ class ProdigiRepositoryImpl(
     override suspend fun getDigitalContents(
         context: Context,
         id: String,
-    ): Flow<ApiResult<List<Content>>> {
+    ): Flow<LoadDataStatus<List<Content>>> {
         return flow {
-            emit(ApiResult.Loading())
+            emit(LoadDataStatus.Loading())
 
             val localContent = try {
                 db.dao.getContentByContentKey(id)
@@ -34,18 +33,8 @@ class ProdigiRepositoryImpl(
 
             if (localContent != null) {
                 Log.i("Prodigi.Repository", "Cache hit")
-                val contentResult = Content(
-                    id = localContent.contentId,
-                    title = localContent.title,
-                    collection = Collection(
-                        name = localContent.collectionName
-                    ),
-                    link = Link(
-                        targetUrl = localContent.targetLink,
-                        url = localContent.contentKey,
-                    )
-                )
-                emit(ApiResult.Success(listOf(contentResult)))
+                val contentResult = localContent.toContent()
+                emit(LoadDataStatus.Success(listOf(contentResult)))
                 return@flow
             }
 
@@ -54,14 +43,36 @@ class ProdigiRepositoryImpl(
             val digitalContents = try {
                 api.getDigitalContents(id, packageName)
             } catch (e: IOException) {
-                emit(ApiResult.Error(message = "Error loading content"))
+                emit(LoadDataStatus.Error(message = "Error loading content"))
                 return@flow
             } catch (e: Exception) {
-                emit(ApiResult.Error(message = "Error loading content"))
+                emit(LoadDataStatus.Error(message = "Error loading content"))
                 return@flow
             }
 
-            emit(ApiResult.Success(digitalContents.contents))
+            emit(LoadDataStatus.Success(digitalContents.contents))
+        }
+    }
+
+    override suspend fun getFilteredContents(filter: String): Flow<LoadDataStatus<List<ContentEntity>>> {
+        return flow {
+            val localContent: List<ContentEntity> = try {
+                if (filter == "")
+                    db.dao.getContents()
+                else {
+                    db.dao.getContentsWithFilter(filter)
+                }
+            } catch (e: Exception) {
+                emptyList()
+            }
+
+            Log.i(
+                "Prodigi.Repository",
+                "Loaded data with filter($filter): ${localContent.size} item(s)"
+            )
+            emit(LoadDataStatus.Success(localContent))
+
+            return@flow
         }
     }
 }

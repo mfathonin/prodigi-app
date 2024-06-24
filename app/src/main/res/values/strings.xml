@@ -8,4 +8,11 @@
     <string name="retry_button">Coba lagi</string>
     <string name="fetch_content_error">Gagal memuat konten digital</string>
     <string name="subtitle_content_list">Pilih konten digital yang ingin dibuka</string>
+    <string name="history_title">Riwayat</string>
+    <string name="search_placeholder">Cari konten digital</string>
+    <string name="search_hint">Cari kontent digital</string>
+    <string name="list_counter_caption">Manampilkan %1$s konten digital</string>
+    <string name="loading">Memuat data</string>
+    <string name="no_data">Tidak ditemukan data %1$s</string>
+    <string name="error_msg">Terjadi kesalahan %1$s</string>
 </resources>

@@ -6,22 +6,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.budiyev.android.codescanner.CodeScanner
-import com.merahputihperkasa.prodigi.ui.components.CameraView
-import com.merahputihperkasa.prodigi.ui.components.ResultBottomSheet
-import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.merahputihperkasa.prodigi.ui.screens.HistoryScreen
+import com.merahputihperkasa.prodigi.ui.screens.QRScanScreen
 
 class MainActivity : ComponentActivity() {
     override fun onStart() {
@@ -40,64 +29,19 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ProdigiBookReaderTheme {
-                Scaffold(content = { paddingValues ->
-                    var result by remember {
-                        mutableStateOf<String?>(null)
-                    }
-                    val bottomSheetState =
-                        rememberModalBottomSheetState(skipPartiallyExpanded = false)
-                    var codeScanner by remember { mutableStateOf<CodeScanner?>(null) }
-
-                    CameraView(
-                        modifier = Modifier.padding(paddingValues),
-                        onScanned = { qrResult -> result = qrResult },
-                        onInitialized = { scanner -> codeScanner = scanner }
-                    )
-
-                    when {
-                        result !== null -> {
-                            ResultBottomSheet(
-                                result = result!!,
-                                onDismissRequest = {
-                                    result = null
-                                    if (codeScanner != null && !codeScanner!!.isPreviewActive) {
-                                        codeScanner?.startPreview()
-                                    }
-                                },
-                                sheetState = bottomSheetState
-                            )
-                        }
-                    }
-                })
+            val navController = rememberNavController()
+            NavHost(navController, startDestination = QRScanScreen) {
+                composable<QRScanScreen> {
+                    QRScanScreen(navController)
+                }
+                composable<HistoryScreen> {
+                    HistoryScreen(navController)
+                }
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
-@Composable
-fun MainPreview() {
-    ProdigiBookReaderTheme {
-        val sheetState = rememberModalBottomSheetState(
-            skipPartiallyExpanded = true,
-        )
-
-        LaunchedEffect(key1 = sheetState) {
-            sheetState.show()
-        }
-
-        ResultBottomSheet(
-            result = "Testing result",
-            onDismissRequest = { },
-            sheetState = sheetState
-        )
-
     }
 }
