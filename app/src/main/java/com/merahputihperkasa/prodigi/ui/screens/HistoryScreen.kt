@@ -1,11 +1,13 @@
 package com.merahputihperkasa.prodigi.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -39,7 +41,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -57,6 +61,7 @@ import com.merahputihperkasa.prodigi.ui.components.ContentsCounterCaption
 import com.merahputihperkasa.prodigi.ui.components.SearchField
 import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 import com.merahputihperkasa.prodigi.ui.theme.Surface400
+import com.merahputihperkasa.prodigi.ui.theme.Typography
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
@@ -166,17 +171,22 @@ fun HistoryScreen(navController: NavController, modifier: Modifier = Modifier) {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     when (contentList.value) {
-                        is LoadDataStatus.Loading -> { LoadingState() }
+                        is LoadDataStatus.Loading -> {
+                            LoadingState()
+                        }
 
                         is LoadDataStatus.Error -> {
                             val error = contentList.value as LoadDataStatus.Error
-                            ErrorState(error = error, errorDescriptor = "memuat konten digital")
+                            ErrorState(
+                                error = error,
+                                errorDescriptor = stringResource(R.string.error_load_content)
+                            )
                         }
 
                         else -> {
                             val contents = (contentList.value as LoadDataStatus.Success).data
                             if (contents.isNullOrEmpty()) {
-                                EmptyState(dataDescription = "konten digital")
+                                EmptyState(dataDescription = stringResource(R.string.empty_content_descriptor))
                             } else {
                                 contents.forEach { contentEntity ->
                                     val content = contentEntity.toContent()
@@ -206,36 +216,42 @@ private suspend fun loadContents(
 fun LoadingState(modifier: Modifier = Modifier) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
             .fillMaxSize()
             .padding(top = 50.dp)
     ) {
         CircularProgressIndicator()
         Text(
-            stringResource(R.string.loading),
-            modifier = Modifier.padding(8.dp),
-            color = Color.Black
+            stringResource(R.string.loading), modifier = Modifier.padding(8.dp), color = Color.Black
         )
     }
 }
 
 @Composable
-fun <T> ErrorState(modifier: Modifier = Modifier, error: LoadDataStatus.Error<T>, errorDescriptor: String = "") {
+fun <T> ErrorState(
+    modifier: Modifier = Modifier,
+    error: LoadDataStatus.Error<T>,
+    errorDescriptor: String = "",
+) {
     Column(
-        modifier
-            .fillMaxSize()
-            .padding(top = 100.dp),
+        modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // TODO: Add error asset
+        Image(
+            painter = painterResource(R.drawable.no_documents),
+            contentDescription = "Error on load",
+            modifier = Modifier
+                .height(180.dp)
+                .padding(vertical = 24.dp)
+        )
         Text(
-            stringResource(R.string.error_msg, errorDescriptor),
-            color = Color.Black
+            stringResource(R.string.error_msg, errorDescriptor), color = Color.Black
         )
         error.message?.let { msg ->
             Text(
-                "Code: $msg", color = Color.Black
+                "Code: $msg", color = Color.Black.copy(alpha = 0.5f),
+                style = Typography.labelSmall.copy(fontStyle = FontStyle.Italic)
             )
         }
     }
@@ -248,10 +264,15 @@ fun EmptyState(modifier: Modifier = Modifier, dataDescription: String) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // TODO: Add empty data asset
+        Image(
+            painter = painterResource(R.drawable.no_search_result),
+            contentDescription = "Error on load",
+            modifier = Modifier
+                .height(180.dp)
+                .padding(vertical = 24.dp)
+        )
         Text(
-            stringResource(R.string.no_data, dataDescription),
-            color = Color.Black
+            stringResource(R.string.no_data, dataDescription), color = Color.Black
         )
     }
 }

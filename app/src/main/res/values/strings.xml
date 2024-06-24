@@ -15,4 +15,6 @@
     <string name="loading">Memuat data</string>
     <string name="no_data">Tidak ditemukan data %1$s</string>
     <string name="error_msg">Terjadi kesalahan %1$s</string>
+    <string name="error_load_content">memuat konten digital</string>
+    <string name="empty_content_descriptor">konten digital</string>
 </resources>
