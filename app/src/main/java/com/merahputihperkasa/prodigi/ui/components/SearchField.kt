@@ -70,7 +70,7 @@ fun SearchField(
                     colors = colors,
                     placeholder = {
                         Text(
-                            stringResource(R.string.search_hint),
+                            stringResource(R.string.search_placeholder),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     },

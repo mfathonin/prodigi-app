@@ -1,5 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Prodigi Book Reader</string>
     <string name="internal_content_title">Konten Digital</string>
     <string name="external_content_title">Hasil Scan</string>
     <string name="url_link_button">Buka tautan</string>
