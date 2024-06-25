@@ -1,5 +1,9 @@
 package com.merahputihperkasa.prodigi.models
 
+import androidx.annotation.Keep
+import com.google.gson.annotations.SerializedName
+
+@Keep
 data class DigitalContentResult(
-    val contents: List<Content>
+    @SerializedName("contents") val contents: List<Content>,
 )

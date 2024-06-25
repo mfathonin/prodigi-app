@@ -1,6 +1,10 @@
 package com.merahputihperkasa.prodigi.models
 
+import androidx.annotation.Keep
+import com.google.gson.annotations.SerializedName
+
+@Keep
 data class Attribute(
-    val key: String,
-    val value: String
+    @SerializedName("key") val key: String,
+    @SerializedName("value") val value: String
 )

@@ -1,6 +1,10 @@
 package com.merahputihperkasa.prodigi.models
 
+import androidx.annotation.Keep
+import com.google.gson.annotations.SerializedName
+
+@Keep
 data class Link(
-    val targetUrl: String,
-    val url: String
+    @SerializedName("targetUrl") val targetUrl: String,
+    @SerializedName("url") val url: String
 )

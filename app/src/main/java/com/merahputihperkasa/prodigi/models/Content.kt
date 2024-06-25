@@ -1,9 +1,13 @@
 package com.merahputihperkasa.prodigi.models
 
+import androidx.annotation.Keep
+import com.google.gson.annotations.SerializedName
+
+@Keep
 data class Content(
-    val collection: Collection,
-    val collectionId: String? = null,
-    val id: String,
-    val link: Link,
-    val title: String,
+    @SerializedName("collection") val collection: Collection,
+    @SerializedName("collectionId") val collectionId: String? = null,
+    @SerializedName("id") val id: String,
+    @SerializedName("link") val link: Link,
+    @SerializedName("title") val title: String,
 )

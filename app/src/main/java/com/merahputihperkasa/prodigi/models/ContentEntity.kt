@@ -15,6 +15,7 @@ data class ContentEntity(
     @ColumnInfo(name = "content_key")
     val contentKey: String,
 
+    @ColumnInfo(name = "title")
     val title: String,
     @ColumnInfo(name = "collection_name")
     val collectionName: String,
@@ -22,6 +23,7 @@ data class ContentEntity(
     val targetLink: String,
 
     @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
     val id: Int = 0,
 )
 

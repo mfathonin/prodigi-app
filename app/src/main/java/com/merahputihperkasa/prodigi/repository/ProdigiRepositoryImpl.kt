@@ -44,12 +44,15 @@ class ProdigiRepositoryImpl(
                 api.getDigitalContents(id, packageName)
             } catch (e: IOException) {
                 emit(LoadDataStatus.Error(message = "Error loading content"))
+                Log.e("Prodigi.Repository", "IOException: Error loading content", e)
                 return@flow
             } catch (e: Exception) {
+                Log.e("Prodigi.Repository", "Exception: Error loading content", e)
                 emit(LoadDataStatus.Error(message = "Error loading content"))
                 return@flow
             }
 
+            Log.d("Prodigi.Repository", "Loaded ${digitalContents.contents.size} item(s)")
             emit(LoadDataStatus.Success(digitalContents.contents))
         }
     }

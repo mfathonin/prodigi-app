@@ -21,11 +21,15 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+        multiDexEnabled false
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            shrinkResources true
+            minifyEnabled true
+            multiDexEnabled false
+            debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

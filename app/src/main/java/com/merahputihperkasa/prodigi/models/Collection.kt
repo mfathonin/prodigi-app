@@ -1,7 +1,11 @@
 package com.merahputihperkasa.prodigi.models
 
+import androidx.annotation.Keep
+import com.google.gson.annotations.SerializedName
+
+@Keep
 data class Collection(
-    val attributes: List<Attribute>? = null,
-    val id: String? = null,
-    val name: String,
+    @SerializedName("attributes") val attributes: List<Attribute>? = null,
+    @SerializedName("id") val id: String? = null,
+    @SerializedName("name") val name: String,
 )
