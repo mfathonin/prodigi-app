@@ -45,16 +45,22 @@ fun CameraView(
     val configuration = LocalConfiguration.current
     val screenW = configuration.screenWidthDp
     val screenH = configuration.screenHeightDp
+    val isPortrait = screenW < screenH
 
-    val scannerFrameSize = 0.65f
-    val scannerVerticalBias = 0.25f
+    val scannerFrameSize = if (isPortrait && 0.65f * screenW > 0.4f * screenH) {
+        0.4f * screenH / screenW
+    } else 0.65f
+
+    val scannerVerticalBias = 0.1f
     val realFrameSize = if (screenW > screenH) { // Landscape
         scannerFrameSize * screenH
     } else { // Portrait
         scannerFrameSize * screenW
     }
 
-    val hintOffsetY = ((screenH * scannerVerticalBias) + (realFrameSize * 0.85f)).toInt()
+    val hintOffsetY =
+        if (isPortrait) ((screenH * scannerVerticalBias) + (realFrameSize * 0.95f)).toInt()
+        else (screenH * 0.8f).toInt()
 
     Box(modifier.fillMaxSize()) {
         AndroidView(
@@ -67,6 +73,7 @@ fun CameraView(
                     val cs = CodeScanner(it, this).apply {
                         isAutoFocusEnabled = true
                         isAutoFocusButtonVisible = false
+                        isFlashButtonVisible = false
                         scanMode = ScanMode.CONTINUOUS
                         camera = CodeScanner.CAMERA_BACK
                         decodeCallback = DecodeCallback { result ->
@@ -80,7 +87,6 @@ fun CameraView(
                     }.also { cs -> codeScanner = cs }
                     cs.startPreview()
                     onInitialized.invoke(cs)
-
                 }
             },
             modifier = Modifier,
@@ -93,7 +99,9 @@ fun CameraView(
         ) {
             Text(
                 text = stringResource(R.string.welcome_instruction),
-                modifier = Modifier.fillMaxWidth(0.65f).align(Alignment.Center),
+                modifier = Modifier
+                    .fillMaxWidth(0.65f)
+                    .align(Alignment.Center),
                 textAlign = TextAlign.Center,
                 color = Color.White
             )

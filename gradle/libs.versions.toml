@@ -1,6 +1,7 @@
 [versions]
 agp = "8.4.2"
 codeScanner = "2.3.2"
+coilCompose = "2.5.0"
 converterGson = "2.9.0"
 kotlin = "1.9.0"
 ksp = "1.9.0-1.0.13"
@@ -22,6 +23,7 @@ serialization = "1.6.3"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 code-scanner = { group = "com.github.yuriy-budiyev", name='code-scanner', version.ref = "codeScanner" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
