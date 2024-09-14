@@ -3,6 +3,7 @@ package com.merahputihperkasa.prodigi.repository
 import android.content.Context
 import android.util.Log
 import com.merahputihperkasa.prodigi.AppModule
+import com.merahputihperkasa.prodigi.models.BannerItem
 import com.merahputihperkasa.prodigi.models.Content
 import com.merahputihperkasa.prodigi.models.ContentEntity
 import com.merahputihperkasa.prodigi.models.toContent
@@ -76,6 +77,22 @@ class ProdigiRepositoryImpl(
             emit(LoadDataStatus.Success(localContent))
 
             return@flow
+        }
+    }
+
+    override suspend fun getBannerItems(): Flow<LoadDataStatus<List<BannerItem>>> {
+        return flow {
+            emit(LoadDataStatus.Loading())
+            try {
+                val bannerItems = api.getBannerItems()
+                emit(LoadDataStatus.Success(bannerItems))
+            } catch (e: IOException) {
+                emit(LoadDataStatus.Error(message = "Error loading banner items"))
+                Log.e("Prodigi.Repository", "IOException: Error loading banner items", e)
+            } catch (e: Exception) {
+                Log.e("Prodigi.Repository", "Exception: Error loading banner items", e)
+                emit(LoadDataStatus.Error(message = "Error loading banner items"))
+            }
         }
     }
 }

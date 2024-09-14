@@ -1,9 +1,12 @@
 package com.merahputihperkasa.prodigi.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,20 +30,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import kotlinx.coroutines.delay
 
 @Composable
-fun ImageSlider(images: List<String>, imageHeight: Dp, imageWidth: Dp) {
+fun ImageSlider(
+    images: List<String>,
+    imageHeight: Dp,
+    imageWidth: Dp,
+    onImageClick: (Int) -> Unit
+) {
     var currentImageIndex by remember { mutableIntStateOf(0) }
     val scrollState = rememberLazyListState()
 
     Column {
         Box(
             modifier = Modifier
-                .height(imageHeight)
+                .height(imageHeight + 24.dp)
                 .width(imageWidth + 24.dp)
                 .shadow(elevation = 3.dp, shape = RoundedCornerShape(16.dp))
                 .clip(RoundedCornerShape(16.dp))
@@ -55,18 +64,20 @@ fun ImageSlider(images: List<String>, imageHeight: Dp, imageWidth: Dp) {
                 state = scrollState,
                 userScrollEnabled = false,
             ) {
-                itemsIndexed(images) { _, image ->
+                itemsIndexed(images) { index, image ->
                     Card(
                         modifier = Modifier
                             .width(imageWidth)
-                            .height(imageHeight),
+                            .height(imageHeight)
+                            .clickable { onImageClick(index) },
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         AsyncImage(
                             model = image,
-                            contentDescription = image,
-                            modifier = Modifier.fillMaxWidth()
+                            contentDescription = "Banner image $index",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
                     }
                 }
@@ -88,7 +99,7 @@ fun ImageSlider(images: List<String>, imageHeight: Dp, imageWidth: Dp) {
     // Auto-play the slider
     LaunchedEffect(currentImageIndex) {
         while (true) {
-            delay(3000L)
+            delay(5000L)
             val nextIndex = (currentImageIndex + 1) % images.size
             scrollState.animateScrollToItem(nextIndex)
             currentImageIndex = nextIndex

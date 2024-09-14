@@ -10,11 +10,23 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.merahputihperkasa.prodigi.ProdigiApp
+import com.merahputihperkasa.prodigi.models.BannerItem
+import com.merahputihperkasa.prodigi.repository.LoadDataStatus
+import com.merahputihperkasa.prodigi.repository.ProdigiRepositoryImpl
+import com.merahputihperkasa.prodigi.utils.openUrl
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun BannerAndControls(
@@ -41,18 +53,23 @@ fun BannerAndControls(
         imageWidth = (maxImageHeight * resolution).dp
     }
     val isPortrait = screenW < screenH
+
+    val context = LocalContext.current
+    val prodigiRepository = ProdigiRepositoryImpl(ProdigiApp.appModule)
+    var bannerItems by remember { mutableStateOf<List<BannerItem>>(emptyList()) }
+
+    LaunchedEffect(key1 = Unit) {
+        prodigiRepository.getBannerItems().collectLatest { result ->
+            if (result is LoadDataStatus.Success) {
+                bannerItems = result.data ?: emptyList()
+            }
+        }
+    }
+
     if (isPortrait) {
         Box(
             modifier = modifier.fillMaxSize()
         ) {
-            val images = listOf(
-                "https://media.npr.org/assets/img/2021/08/11/gettyimages-1279899488_wide-f3860ceb0ef19643c335cb34df3fa1de166e2761-s1100-c50.jpg",
-                "https://cdn.pixabay.com/photo/2017/02/20/18/03/cat-2083492__480.jpg",
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrfPnodZbEjtJgE-67C-0W9pPXK8G9Ai6_Rw&usqp=CAU",
-                "https://i.ytimg.com/vi/E9iP8jdtYZ0/maxresdefault.jpg",
-                "https://cdn.shopify.com/s/files/1/0535/2738/0144/articles/shutterstock_149121098_360x.jpg"
-            )
-
             Column(
                 modifier = Modifier
                     .width(imageWidth + 24.dp + 24.dp)
@@ -63,11 +80,18 @@ fun BannerAndControls(
                     .background(MaterialTheme.colorScheme.surface),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                ImageSlider(
-                    images,
-                    imageHeight = imageHeight,
-                    imageWidth = imageWidth
-                )
+                if (bannerItems.isNotEmpty()) {
+                    ImageSlider(
+                        images = bannerItems.map { it.image },
+                        imageHeight = imageHeight,
+                        imageWidth = imageWidth,
+                        onImageClick = { index ->
+                            bannerItems.getOrNull(index)?.let { item ->
+                                openUrl(context, item.url)
+                            }
+                        }
+                    )
+                }
                 ButtonControlsPortrait(
                     onHistoryClick = onHistoryClick,
                     onFlashClick = onFlashClick
