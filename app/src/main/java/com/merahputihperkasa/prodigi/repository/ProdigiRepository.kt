@@ -7,8 +7,8 @@ import com.merahputihperkasa.prodigi.models.ContentEntity
 import kotlinx.coroutines.flow.Flow
 
 interface ProdigiRepository {
-    suspend fun getDigitalContents(context: Context, id: String): Flow<LoadDataStatus<List<Content>>>
-    suspend fun getFilteredContents(filter: String): Flow<LoadDataStatus<List<ContentEntity>>>
-    suspend fun getBannerItems(): Flow<LoadDataStatus<List<BannerItem>>>
+    suspend fun getDigitalContents(id: String): Flow<LoadDataStatus<List<Content>>>
+    suspend fun getFilteredContents(filter: String, forceRefresh: Boolean): Flow<LoadDataStatus<List<ContentEntity>>>
+    suspend fun getBannerItems(forceRefresh: Boolean): Flow<LoadDataStatus<List<BannerItem>>>
 }
 

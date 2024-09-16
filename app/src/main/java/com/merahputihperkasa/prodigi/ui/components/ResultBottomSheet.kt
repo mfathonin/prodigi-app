@@ -56,7 +56,7 @@ fun ResultBottomSheet(
         val scope = rememberCoroutineScope()
         val context = LocalContext.current
 
-        val prodigiRepository = ProdigiRepositoryImpl(ProdigiApp.appModule)
+        val prodigiRepository = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
 
         val content = remember {
             MutableStateFlow<LoadDataStatus<List<Content>>>(LoadDataStatus.Loading())
@@ -67,7 +67,7 @@ fun ResultBottomSheet(
             if (!isInternalSources) return@LaunchedEffect
 
             scope.launch {
-                fetchContents(prodigiRepository, context, contentId, content)
+                fetchContents(prodigiRepository, contentId, content)
             }
         }
 
@@ -141,7 +141,6 @@ fun ResultBottomSheet(
                                         scope.launch {
                                             fetchContents(
                                                 prodigiRepository,
-                                                context,
                                                 contentId,
                                                 content
                                             )
@@ -166,14 +165,10 @@ fun ResultBottomSheet(
                                     ContentCardView(content, onItemClick = {
                                         scope.launch {
                                             try {
-                                                val newContent = ContentEntity(
-                                                    title = content.title,
-                                                    collectionName = content.collection.name,
-                                                    targetLink = content.link.targetUrl,
-                                                    contentId = content.id,
-                                                    contentKey = content.link.url
-                                                )
-                                                ProdigiApp.appModule.db.dao.addContent(newContent)
+                                                val currentTime = System.currentTimeMillis()
+                                                val expirationTime = currentTime + 60 * 60 * 1000
+                                                val newContent = content.toContentEntity(expirationTime)
+                                                ProdigiApp.appModule.db.contentsDao.upsertContent(newContent)
                                                 Log.i(
                                                     "Prodigi.Room",
                                                     "Record successfully added: $newContent"
@@ -201,12 +196,11 @@ fun ResultBottomSheet(
 
 private suspend fun fetchContents(
     prodigiRepository: ProdigiRepositoryImpl,
-    context: Context,
     contentId: String,
     content: MutableStateFlow<LoadDataStatus<List<Content>>>,
 ) {
     content.update { LoadDataStatus.Loading() }
-    prodigiRepository.getDigitalContents(context, contentId)
+    prodigiRepository.getDigitalContents(contentId)
         .collectLatest { result ->
             content.update { result }
         }

@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -88,8 +89,9 @@ fun HistoryScreen(navController: NavController, modifier: Modifier = Modifier) {
             MaterialTheme.colorScheme.surface
         }
 
+        val context = LocalContext.current
         val scope = rememberCoroutineScope()
-        val prodigiRepository = ProdigiRepositoryImpl(ProdigiApp.appModule)
+        val prodigiRepository = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
 
         val contentListFlow = remember {
             MutableStateFlow<LoadDataStatus<List<ContentEntity>>>(LoadDataStatus.Loading())
@@ -206,7 +208,7 @@ private suspend fun loadContents(
     prodigiRepository: ProdigiRepositoryImpl,
     searchValue: String,
 ) {
-    prodigiRepository.getFilteredContents(searchValue).collectLatest { value ->
+    prodigiRepository.getFilteredContents(searchValue, false).collectLatest { value ->
         contentList.update { value }
     }
 }

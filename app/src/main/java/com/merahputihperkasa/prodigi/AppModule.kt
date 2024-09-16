@@ -31,8 +31,10 @@ class AppModuleImpl(
         Room.databaseBuilder(
             appContext,
             ContentsDatabase::class.java,
-            "contents.db"
-        ).build()
+            "prodigi.db"
+        )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     private val interceptor = HttpLoggingInterceptor().apply {

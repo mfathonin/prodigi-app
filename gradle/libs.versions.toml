@@ -19,9 +19,11 @@ retrofit = "2.9.0"
 room = "2.6.1"
 material3 = "1.3.0"
 serialization = "1.6.3"
+workRuntimeKtx = "2.9.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 code-scanner = { group = "com.github.yuriy-budiyev", name='code-scanner', version.ref = "codeScanner" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }

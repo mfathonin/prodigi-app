@@ -55,11 +55,11 @@ fun BannerAndControls(
     val isPortrait = screenW < screenH
 
     val context = LocalContext.current
-    val prodigiRepository = ProdigiRepositoryImpl(ProdigiApp.appModule)
+    val prodigiRepository = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
     var bannerItems by remember { mutableStateOf<List<BannerItem>>(emptyList()) }
 
     LaunchedEffect(key1 = Unit) {
-        prodigiRepository.getBannerItems().collectLatest { result ->
+        prodigiRepository.getBannerItems(false).collectLatest { result ->
             if (result is LoadDataStatus.Success) {
                 bannerItems = result.data ?: emptyList()
             }

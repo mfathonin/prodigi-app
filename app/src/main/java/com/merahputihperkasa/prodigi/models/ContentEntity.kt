@@ -7,24 +7,24 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "contents",
-    indices = [Index(value = ["content_id"], unique = true)]
+    indices = [Index(value = ["content_key"], unique = true)]
 )
 data class ContentEntity(
-    @ColumnInfo(name = "content_id")
-    val contentId: String,
+    @PrimaryKey
     @ColumnInfo(name = "content_key")
     val contentKey: String,
-
+    @ColumnInfo(name = "content_id")
+    val contentId: String,
     @ColumnInfo(name = "title")
     val title: String,
     @ColumnInfo(name = "collection_name")
     val collectionName: String,
     @ColumnInfo(name = "target_link")
     val targetLink: String,
-
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "id")
-    val id: Int = 0,
+    @ColumnInfo(name = "expiration_time")
+    val expirationTime: Long = 0,  // Default to 0 for backward compatibility
+    @ColumnInfo(name = "last_fetch_time")
+    val lastFetchTime: Long = System.currentTimeMillis(),
 )
 
 fun ContentEntity.toContent() = Content(
