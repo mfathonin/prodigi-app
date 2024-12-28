@@ -4,16 +4,18 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.jetbrainsCompose)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace 'com.merahputihperkasa.prodigi'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.merahputihperkasa.prodigi"
         minSdk 21
-        targetSdk 34
+        targetSdk 35
         versionCode 5
         versionName '2.0.5'
 
@@ -41,11 +43,11 @@ android {
         schemaDirectory "$projectDir/schemas"
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_20
+        targetCompatibility JavaVersion.VERSION_20
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '20'
     }
     buildFeatures {
         compose true
@@ -55,7 +57,7 @@ android {
     }
     packaging {
         resources {
-            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            it.excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
 }
