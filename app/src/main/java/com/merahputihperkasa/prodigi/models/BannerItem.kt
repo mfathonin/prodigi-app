@@ -9,3 +9,9 @@ data class BannerItem(
     @SerializedName("image") val image: String,
     @SerializedName("url") val url: String
 )
+
+@Keep
+data class BannerItemResult(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("data") val data: List<BannerItem>
+)

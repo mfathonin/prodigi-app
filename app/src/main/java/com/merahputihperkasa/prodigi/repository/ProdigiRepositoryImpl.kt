@@ -24,14 +24,14 @@ class ProdigiRepositoryImpl(
 
     override suspend fun getDigitalContents(
         id: String,
-    ): Flow<LoadDataStatus<List<Content>>> = flow {
+    ): Flow<LoadDataStatus<Content>> = flow {
         emit(LoadDataStatus.Loading())
 
         // Always emit cached data first if available
         val cachedContent = db.contentsDao.getValidContentByContentKey(System.currentTimeMillis(), id)
         if (cachedContent != null) {
             Log.i("Prodigi.Repository", "[getDigitalContents] Cache hit")
-            emit(LoadDataStatus.Success(listOf(cachedContent.toContent())))
+            emit(LoadDataStatus.Success(cachedContent.toContent()))
         }
 
         // Fetch from network if force refresh or cache miss
@@ -40,11 +40,13 @@ class ProdigiRepositoryImpl(
             try {
                 val digitalContents = api.getDigitalContents(id, context.packageName)
                 val expirationTime = System.currentTimeMillis() + expirationPeriod
-                digitalContents.contents.forEach { content ->
-                    db.contentsDao.upsertContent(content.toContentEntity(expirationTime))
-                }
-                emit(LoadDataStatus.Success(digitalContents.contents))
+                val content = digitalContents.data
+                db.contentsDao.upsertContent(content.toContentEntity(expirationTime))
+
+                Log.i("Prodigi.Repository", "[getDigitalContents] Updated: $content")
+                emit(LoadDataStatus.Success(digitalContents.data))
             } catch (e: Exception) {
+                Log.e("Prodigi.Repository", "[getDigitalContents] Error: ${e.message}")
                 emit(LoadDataStatus.Error("Error loading content"))
             }
         }
@@ -72,7 +74,7 @@ class ProdigiRepositoryImpl(
             expiredContent.forEach { content ->
                 val result = api.getDigitalContents(content.contentKey, packageName)
                 val expirationTime = System.currentTimeMillis() + expirationPeriod
-                val updatedContent = result.contents[0].toContentEntity(expirationTime)
+                val updatedContent = result.data.toContentEntity(expirationTime)
                 db.contentsDao.upsertContent(updatedContent)
                 Log.i("Prodigi.Repository", "[getFilteredContents] Updated: ${updatedContent.contentKey}")
             }
@@ -95,9 +97,9 @@ class ProdigiRepositoryImpl(
             try {
                 val bannerItems = api.getBannerItems()
                 val expirationTime = currentTime + expirationPeriod
-                val bannerItemEntities = bannerItems.map { it.toEntity(expirationTime) }
+                val bannerItemEntities = bannerItems.data.map { it.toEntity(expirationTime) }
                 db.bannerItemsDao.upsertBannerItems(bannerItemEntities)
-                emit(LoadDataStatus.Success(bannerItems))
+                emit(LoadDataStatus.Success(bannerItems.data))
             } catch (e: Exception) {
                 emit(LoadDataStatus.Error("Error loading banner items", cachedBannerItems.map { it.toBannerItem() }))
             }

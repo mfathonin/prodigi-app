@@ -70,15 +70,16 @@ fun ContentCardView(
 fun ContentCardViewPreview() {
     val content = Content(
         id = "1",
-        title = "Title",
+        title = "Content Title",
         link = Link(
             url = "https://www.google.com",
             targetUrl = "https://www.youtube.com",
         ),
+        type = "content",
         collectionId = "1",
         collection = Collection(
             id = "1",
-            name = "Collection",
+            name = "Collection Name",
             attributes = null
         )
     )
