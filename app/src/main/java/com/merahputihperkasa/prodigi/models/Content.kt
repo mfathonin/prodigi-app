@@ -10,12 +10,14 @@ data class Content(
     @SerializedName("id") val id: String,
     @SerializedName("link") val link: Link,
     @SerializedName("title") val title: String,
+    @SerializedName("type") val type: String
 ) {
     fun toContentEntity(expirationTime: Long): ContentEntity {
         return ContentEntity(
             contentId = id,
             contentKey = link.url,
             title = title,
+            type = type,
             collectionName = collection.name,
             targetLink = link.targetUrl,
             expirationTime = expirationTime
