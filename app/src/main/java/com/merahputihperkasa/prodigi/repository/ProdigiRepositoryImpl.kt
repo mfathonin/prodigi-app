@@ -6,6 +6,9 @@ import com.merahputihperkasa.prodigi.AppModule
 import com.merahputihperkasa.prodigi.models.BannerItem
 import com.merahputihperkasa.prodigi.models.Content
 import com.merahputihperkasa.prodigi.models.ContentEntity
+import com.merahputihperkasa.prodigi.models.Submission
+import com.merahputihperkasa.prodigi.models.SubmissionEntity
+import com.merahputihperkasa.prodigi.models.WorkSheet
 import com.merahputihperkasa.prodigi.models.toBannerItem
 import com.merahputihperkasa.prodigi.models.toContent
 import com.merahputihperkasa.prodigi.models.toEntity
@@ -104,5 +107,57 @@ class ProdigiRepositoryImpl(
                 emit(LoadDataStatus.Error("Error loading banner items", cachedBannerItems.map { it.toBannerItem() }))
             }
         }
+    }
+
+    override suspend fun getWorkSheetConfig(id: String, forceRefresh: Boolean): Flow<LoadDataStatus<WorkSheet>> = flow {
+        emit(LoadDataStatus.Loading())
+
+        val currentTime = System.currentTimeMillis()
+        val cachedWorkSheetConf = db.workSheetsDao.getWorkSheetByUUID(id, currentTime)
+        if (cachedWorkSheetConf != null && !forceRefresh) {
+            Log.i("Prodigi.Repository", "[getWorksheet.$id] Cache hit")
+            emit(LoadDataStatus.Success(cachedWorkSheetConf.toWorkSheet()))
+        }
+
+        if (forceRefresh || cachedWorkSheetConf == null) {
+            Log.w("Prodigi.Repository", "[getWorkSheet.$id] Cache miss")
+            try {
+                val conf = api.getWorksheetConf(id)
+                val expirationTime = currentTime + expirationPeriod
+                val workSheetsEntity = conf.data.toEntity(expirationTime)
+                db.workSheetsDao.upsertWorkSheet(workSheetsEntity)
+                emit(LoadDataStatus.Success(conf.data))
+            } catch (e: Exception) {
+                emit(LoadDataStatus.Error("Error load worksheet conf"))
+            }
+        }
+    }
+
+    override suspend fun saveProfile(
+        workSheetId: String,
+        name: String,
+        idNumber: String,
+        className: String,
+        schoolName: String,
+    ): Int {
+        val submission = SubmissionEntity(
+            name = name,
+            idNumber = idNumber,
+            className = className,
+            schoolName = schoolName,
+            worksheetUuid = workSheetId
+        )
+
+        val submissionId = db.submissionDao.upsertSubmission(submission)
+        Log.i("Prodigi.Repository", "[new.submission.$workSheetId] SubmissionID: $submissionId")
+
+        return submissionId.toInt()
+    }
+
+    override suspend fun getSubmisisonById(id: Int): Flow<LoadDataStatus<Submission?>> = flow {
+        emit(LoadDataStatus.Loading())
+
+        val submission = db.submissionDao.getSubmissionById(id)
+        emit(LoadDataStatus.Success(submission?.toSubmission()))
     }
 }

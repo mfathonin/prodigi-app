@@ -16,4 +16,13 @@
     <string name="error_msg">Terjadi kesalahan %1$s</string>
     <string name="error_load_content">memuat konten digital</string>
     <string name="empty_content_descriptor">konten digital</string>
+    <string name="worksheet_title">Lembar Kerja</string>
+    <string name="error_load_worksheet">memuat lembar kerja</string>
+    <string name="error_worksheet_descriptor">lembar kerja</string>
+    <string name="worksheet_question_numbers">%1$s Pertanyaan</string>
+    <string name="profile_field_class_name">Kelas</string>
+    <string name="profile_field_id_number">Nomor Absen</string>
+    <string name="profile_field_name">Nama</string>
+    <string name="profile_field_school_name">Sekolah</string>
+    <string name="worksheet_start_button_label">Mulai</string>
 </resources>

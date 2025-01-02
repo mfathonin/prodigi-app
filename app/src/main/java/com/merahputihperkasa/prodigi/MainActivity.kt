@@ -9,9 +9,17 @@ import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navDeepLink
+import androidx.navigation.toRoute
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.merahputihperkasa.prodigi.ui.screens.HistoryScreen
 import com.merahputihperkasa.prodigi.ui.screens.QRScanScreen
-import androidx.work.*
+import com.merahputihperkasa.prodigi.ui.screens.WorkSheetDetailScreen
+import com.merahputihperkasa.prodigi.ui.screens.WorksheetDetailScreen
 import com.merahputihperkasa.prodigi.utils.DataSyncWorker
 import java.util.concurrent.TimeUnit
 
@@ -44,6 +52,16 @@ class MainActivity : ComponentActivity() {
                 }
                 composable<HistoryScreen> {
                     HistoryScreen(navController)
+                }
+                composable<WorksheetDetailScreen>(
+                    deepLinks = listOf(
+                        navDeepLink<WorksheetDetailScreen>(
+                            basePath = "https://${ProdigiApp.appModule.internalSourceDomain}/quiz"
+                        )
+                    )
+                ) {
+                    val id = it.toRoute<WorksheetDetailScreen>().id
+                    WorkSheetDetailScreen(id, navController)
                 }
             }
         }

@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.merahputihperkasa.prodigi.repository.local.ContentsDatabase
 import com.merahputihperkasa.prodigi.repository.local.migrations.Migration1To2
 import com.merahputihperkasa.prodigi.repository.local.migrations.Migration2To3
+import com.merahputihperkasa.prodigi.repository.local.migrations.Migration3To4
 import com.merahputihperkasa.prodigi.repository.network.ProdigiApi
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -35,7 +36,7 @@ class AppModuleImpl(
             ContentsDatabase::class.java,
             "prodigi.db"
         )
-            .addMigrations(Migration1To2, Migration2To3)
+            .addMigrations(Migration1To2, Migration2To3, Migration3To4)
             .fallbackToDestructiveMigration()
             .build()
     }

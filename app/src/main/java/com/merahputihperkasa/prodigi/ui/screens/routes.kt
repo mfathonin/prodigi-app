@@ -7,3 +7,6 @@ object QRScanScreen
 
 @Serializable
 object HistoryScreen
+
+@Serializable
+data class WorksheetDetailScreen(val id: String)
