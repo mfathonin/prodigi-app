@@ -56,17 +56,17 @@ data class SubmissionEntity (
 @Keep
 data class Profile (
     @SerializedName("name") val name: String,
-    @SerializedName("id_number") val idNumber: String,
-    @SerializedName("class_name") val className: String,
-    @SerializedName("school_name") val schoolName: String
+    @SerializedName("numberId") val idNumber: String,
+    @SerializedName("className") val className: String,
+    @SerializedName("schoolName") val schoolName: String
 )
 
 @Keep
 data class Submission (
     @SerializedName("profile") val profile: Profile,
     @SerializedName("answers") val answers: List<Int> = emptyList(),
-    @SerializedName("correct_answers") var correctAnswers: Int? = null,
-    @SerializedName("total_points") var totalPoints: Int? = null
+    @SerializedName("correctAnswers") var correctAnswers: Int? = null,
+    @SerializedName("totalPoints") var totalPoints: Int? = null
 ) {
     fun toSubmissionEntity(id: Int, worksheetUuid: String): SubmissionEntity {
         return SubmissionEntity(
@@ -81,10 +81,29 @@ data class Submission (
             worksheetUuid
         )
     }
+    fun toSubmissionBody(): SubmissionBody {
+        return SubmissionBody(
+            name = profile.name,
+            numberId = profile.idNumber,
+            className = profile.className,
+            schoolName = profile.schoolName,
+            answers
+        )
+    }
 }
 
 @Keep
 data class SubmissionResult (
     @SerializedName("success") val success: Boolean,
     @SerializedName("data") val data: Submission
+)
+
+@Keep
+data class SubmissionBody (
+    @SerializedName("name") val name: String,
+    @SerializedName("numberId") val numberId: String,
+    @SerializedName("className") val className: String,
+    @SerializedName("schoolName") val schoolName: String,
+    @SerializedName("answers") val answers: List<Int> = emptyList()
+
 )

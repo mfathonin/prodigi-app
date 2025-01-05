@@ -39,7 +39,7 @@ fun QRScanScreen(navController: NavController) {
             BannerAndControls(
                 modifier = Modifier.padding(paddingValues),
                 onHistoryClick = {
-                    navController.navigate(HistoryScreen)
+                    navController.navigate(History)
                 },
                 onFlashClick = {
                     if (codeScanner != null) {

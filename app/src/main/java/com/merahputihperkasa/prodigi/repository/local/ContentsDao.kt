@@ -5,7 +5,6 @@ import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
 import com.merahputihperkasa.prodigi.models.ContentEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ContentsDao {

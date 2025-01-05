@@ -3,7 +3,7 @@ package com.merahputihperkasa.prodigi.repository.network
 import com.merahputihperkasa.prodigi.ProdigiApp
 import com.merahputihperkasa.prodigi.models.BannerItemResult
 import com.merahputihperkasa.prodigi.models.DigitalContentResult
-import com.merahputihperkasa.prodigi.models.Submission
+import com.merahputihperkasa.prodigi.models.SubmissionBody
 import com.merahputihperkasa.prodigi.models.SubmissionResult
 import com.merahputihperkasa.prodigi.models.WorkSheetResult
 import retrofit2.http.Body
@@ -34,6 +34,6 @@ interface ProdigiApi {
     @POST("/api/v2/quiz/{id}")
     suspend fun submitWorksheet(
         @Path("id") id: String,
-        @Body body: Submission
+        @Body body: SubmissionBody
     ): SubmissionResult
 }

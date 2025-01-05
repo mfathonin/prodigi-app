@@ -3,10 +3,13 @@ package com.merahputihperkasa.prodigi.ui.screens
 import kotlinx.serialization.Serializable
 
 @Serializable
-object QRScanScreen
+object QRScan
 
 @Serializable
-object HistoryScreen
+object History
 
 @Serializable
-data class WorksheetDetailScreen(val id: String)
+data class WorksheetDetail(val id: String)
+
+@Serializable
+data class WorkSheet(val id: Int, val worksheetId: String)

@@ -26,7 +26,7 @@ import com.merahputihperkasa.prodigi.repository.ProdigiRepositoryImpl
 import kotlinx.coroutines.launch
 
 @Composable
-fun ProfileForm(workSheetId: String, onSubmitted: () -> Unit) {
+fun ProfileForm(workSheetId: String, count: Int, onSubmitted: (id: Int) -> Unit) {
     val context = LocalContext.current
     val repo = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
 
@@ -82,10 +82,10 @@ fun ProfileForm(workSheetId: String, onSubmitted: () -> Unit) {
             if (isFormValid) {
                 scope.launch {
                     // Save data to Room database
-                    repo.saveProfile(workSheetId, name, idNumber, className, schoolName)
+                    val id = repo.saveProfile(id = null, workSheetId, name, idNumber, className, schoolName, List(count) { -1 })
 
                     // Navigate to the next screen
-                    onSubmitted.invoke()
+                    onSubmitted.invoke(id)
                 }
             }
         },

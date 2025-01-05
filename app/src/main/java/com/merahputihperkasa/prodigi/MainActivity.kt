@@ -16,10 +16,14 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.merahputihperkasa.prodigi.ui.screens.History
 import com.merahputihperkasa.prodigi.ui.screens.HistoryScreen
+import com.merahputihperkasa.prodigi.ui.screens.QRScan
 import com.merahputihperkasa.prodigi.ui.screens.QRScanScreen
+import com.merahputihperkasa.prodigi.ui.screens.WorkSheet
 import com.merahputihperkasa.prodigi.ui.screens.WorkSheetDetailScreen
-import com.merahputihperkasa.prodigi.ui.screens.WorksheetDetailScreen
+import com.merahputihperkasa.prodigi.ui.screens.WorkSheetScreen
+import com.merahputihperkasa.prodigi.ui.screens.WorksheetDetail
 import com.merahputihperkasa.prodigi.utils.DataSyncWorker
 import java.util.concurrent.TimeUnit
 
@@ -46,22 +50,31 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
-            NavHost(navController, startDestination = QRScanScreen) {
-                composable<QRScanScreen> {
+            NavHost(navController, startDestination = QRScan) {
+                composable<QRScan> {
                     QRScanScreen(navController)
                 }
-                composable<HistoryScreen> {
+                composable<History> {
                     HistoryScreen(navController)
                 }
-                composable<WorksheetDetailScreen>(
+                composable<WorksheetDetail>(
                     deepLinks = listOf(
-                        navDeepLink<WorksheetDetailScreen>(
+                        navDeepLink<WorksheetDetail>(
                             basePath = "https://${ProdigiApp.appModule.internalSourceDomain}/quiz"
                         )
                     )
                 ) {
-                    val id = it.toRoute<WorksheetDetailScreen>().id
-                    WorkSheetDetailScreen(id, navController)
+                    val id = it.toRoute<WorksheetDetail>().id
+                    WorkSheetDetailScreen(id) { submissionId, worksheetId ->
+                        navController.navigate(WorkSheet(submissionId, worksheetId))
+                    }
+                }
+                composable<WorkSheet> { backStackEntry ->
+                    val id = backStackEntry.arguments?.getInt("id")
+                    val worksheetId = backStackEntry.arguments?.getString("worksheetId")
+                    if (id != null && worksheetId != null) {
+                        WorkSheetScreen(id, worksheetId)
+                    }
                 }
             }
         }

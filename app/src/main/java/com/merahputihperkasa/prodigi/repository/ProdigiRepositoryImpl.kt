@@ -8,6 +8,7 @@ import com.merahputihperkasa.prodigi.models.Content
 import com.merahputihperkasa.prodigi.models.ContentEntity
 import com.merahputihperkasa.prodigi.models.Submission
 import com.merahputihperkasa.prodigi.models.SubmissionEntity
+import com.merahputihperkasa.prodigi.models.SubmissionResult
 import com.merahputihperkasa.prodigi.models.WorkSheet
 import com.merahputihperkasa.prodigi.models.toBannerItem
 import com.merahputihperkasa.prodigi.models.toContent
@@ -134,18 +135,22 @@ class ProdigiRepositoryImpl(
     }
 
     override suspend fun saveProfile(
+        id: Int?,
         workSheetId: String,
         name: String,
         idNumber: String,
         className: String,
         schoolName: String,
+        answers: List<Int>
     ): Int {
         val submission = SubmissionEntity(
+            id = id ?: 0,
             name = name,
             idNumber = idNumber,
             className = className,
             schoolName = schoolName,
-            worksheetUuid = workSheetId
+            worksheetUuid = workSheetId,
+            answers = answers
         )
 
         val submissionId = db.submissionDao.upsertSubmission(submission)
@@ -154,10 +159,32 @@ class ProdigiRepositoryImpl(
         return submissionId.toInt()
     }
 
-    override suspend fun getSubmisisonById(id: Int): Flow<LoadDataStatus<Submission?>> = flow {
+    override suspend fun getSubmissionById(id: Int): Flow<LoadDataStatus<Submission>> = flow {
         emit(LoadDataStatus.Loading())
 
         val submission = db.submissionDao.getSubmissionById(id)
-        emit(LoadDataStatus.Success(submission?.toSubmission()))
+        if (submission == null) {
+            emit(LoadDataStatus.Error("Submission not found"))
+        } else {
+            emit(LoadDataStatus.Success(submission.toSubmission()))
+        }
+    }
+
+    override suspend fun submitEvaluateAnswer(submissionId: Int, workSheetId: String, submission: Submission): Flow<LoadDataStatus<Submission>> = flow {
+        emit(LoadDataStatus.Loading())
+        val result: SubmissionResult = api.submitWorksheet(workSheetId, submission.toSubmissionBody())
+        Log.i("Prodigi.API", "[submit.answer.$workSheetId] $result")
+
+        if (result.success) {
+            emit(LoadDataStatus.Success(result.data))
+            val finalSubmissionEntity = result.data
+                .copy(answers = submission.answers)
+                .toSubmissionEntity(submissionId, workSheetId)
+            db.submissionDao.upsertSubmission(finalSubmissionEntity)
+            Log.i("Prodigi.Repository", "[submit.answer.$workSheetId] SubmissionID: $submissionId, score: ${finalSubmissionEntity.totalPoints}")
+        } else {
+            Log.e("Prodigi.Repository", "[submit.answer.$workSheetId] Failed to evaluate answers, $result")
+            emit(LoadDataStatus.Error("Failed to evaluate answers", submission))
+        }
     }
 }

@@ -13,6 +13,6 @@ interface SubmissionDao {
     @Query("SELECT * FROM submissions WHERE worksheet_uuid = :worksheetUuid")
     suspend fun getSubmissionsByWorksheetUuid(worksheetUuid: String): List<SubmissionEntity>
 
-    @Query("SELECT * FROM submissions WHERE id = :id")
+    @Query("SELECT * FROM submissions WHERE id = :id LIMIT 1")
     suspend fun getSubmissionById(id: Int): SubmissionEntity?
 }

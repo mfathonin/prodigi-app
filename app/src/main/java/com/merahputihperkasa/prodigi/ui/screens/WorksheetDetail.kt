@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.navigation.NavController
 import com.merahputihperkasa.prodigi.ProdigiApp
 import com.merahputihperkasa.prodigi.R
 import com.merahputihperkasa.prodigi.models.WorkSheet
@@ -42,7 +41,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @Composable
-fun WorkSheetDetailScreen(id: String, navController: NavController, modifier: Modifier = Modifier) {
+fun WorkSheetDetailScreen(id: String, onNavigateStart: (id: Int, worksheetId: String) -> Unit) {
     ProdigiBookReaderTheme {
         val scrollState = rememberScrollState()
         val imeState = rememberImeState()
@@ -80,7 +79,7 @@ fun WorkSheetDetailScreen(id: String, navController: NavController, modifier: Mo
         Scaffold(
             content = { paddingValues ->
                 Column(
-                    modifier
+                    Modifier
                         .padding(paddingValues)
                         .padding(horizontal = 20.dp)
                         .fillMaxSize()
@@ -127,8 +126,8 @@ fun WorkSheetDetailScreen(id: String, navController: NavController, modifier: Mo
                                 // TODO:
                                 //  Create form for Profile and start worksheet creation
                                 //  worksheet creation based on counts and n_options in conf
-                                ProfileForm(conf.uuid) {
-                                    navController.navigate(HistoryScreen)
+                                ProfileForm(conf.uuid, conf.counts) { id ->
+                                    onNavigateStart.invoke(id, conf.uuid)
                                 }
                             } else {
                                 EmptyState(
