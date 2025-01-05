@@ -240,7 +240,7 @@ fun <T> ErrorState(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
-            painter = painterResource(R.drawable.no_documents),
+            painter = painterResource(R.mipmap.no_documents),
             contentDescription = "Error on load",
             modifier = Modifier
                 .height(180.dp)
@@ -267,7 +267,7 @@ fun EmptyState(modifier: Modifier = Modifier, dataDescription: String) {
         verticalArrangement = Arrangement.Center
     ) {
         Image(
-            painter = painterResource(R.drawable.no_search_result),
+            painter = painterResource(R.mipmap.no_search_result),
             contentDescription = "Error on load",
             modifier = Modifier
                 .height(180.dp)

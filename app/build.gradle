@@ -37,6 +37,14 @@ android {
             multiDexEnabled false
             debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField("String", "BUILD_TYPE", "\"release\"")
+        }
+        debug {
+            shrinkResources false
+            minifyEnabled false
+            multiDexEnabled false
+            debuggable true
+            buildConfigField("String", "BUILD_TYPE", "\"debug\"")
         }
     }
     room {
@@ -51,6 +59,7 @@ android {
     }
     buildFeatures {
         compose true
+        buildConfig true
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.1'

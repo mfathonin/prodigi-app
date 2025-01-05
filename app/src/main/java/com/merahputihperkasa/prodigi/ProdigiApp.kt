@@ -10,6 +10,14 @@ class ProdigiApp: Application() {
 
     override fun onCreate() {
         super.onCreate()
-        appModule = AppModuleImpl(this)
+
+        // Initialize the app module base on active build variant
+        val buildType = BuildConfig.BUILD_TYPE
+        @Suppress("KotlinConstantConditions")
+        appModule = if (buildType == "debug") {
+            AppDebugModule(this)
+        } else {
+            AppReleaseModule(this)
+        }
     }
 }
