@@ -22,18 +22,23 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.merahputihperkasa.prodigi.ProdigiApp
 import com.merahputihperkasa.prodigi.R
+import com.merahputihperkasa.prodigi.models.Profile
 import com.merahputihperkasa.prodigi.repository.ProdigiRepositoryImpl
 import kotlinx.coroutines.launch
 
 @Composable
-fun ProfileForm(workSheetId: String, count: Int, onSubmitted: (id: Int) -> Unit) {
+fun ProfileForm(
+    workSheetId: String, count: Int,
+    profile: Profile? = null, submissionId: Int? = null, answers: List<Int>? = null,
+    onSubmitted: (id: Int) -> Unit
+) {
     val context = LocalContext.current
     val repo = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
 
-    var name by rememberSaveable { mutableStateOf("") }
-    var idNumber by rememberSaveable { mutableStateOf("") }
-    var className by rememberSaveable { mutableStateOf("") }
-    var schoolName by rememberSaveable { mutableStateOf("") }
+    var name by rememberSaveable { mutableStateOf(profile?.name ?: "") }
+    var idNumber by rememberSaveable { mutableStateOf(profile?.idNumber ?: "") }
+    var className by rememberSaveable { mutableStateOf(profile?.className ?: "") }
+    var schoolName by rememberSaveable { mutableStateOf(profile?.schoolName ?: "") }
     val isFormValid by remember {
         derivedStateOf {
             name.isNotBlank() && idNumber.isNotBlank() && className.isNotBlank() && schoolName.isNotBlank()
@@ -82,10 +87,14 @@ fun ProfileForm(workSheetId: String, count: Int, onSubmitted: (id: Int) -> Unit)
             if (isFormValid) {
                 scope.launch {
                     // Save data to Room database
-                    val id = repo.saveProfile(id = null, workSheetId, name, idNumber, className, schoolName, List(count) { -1 })
+                    val id = repo.upsertSubmission(
+                        id = submissionId, workSheetId,
+                        name, idNumber, className, schoolName,
+                        answers = answers ?: List(count) { -1 }
+                    )
 
                     // Navigate to the next screen
-                    onSubmitted.invoke(id)
+                    onSubmitted.invoke(submissionId ?: id)
                 }
             }
         },

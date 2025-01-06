@@ -43,11 +43,10 @@ class ProdigiRepositoryImpl(
             Log.w("Prodigi.Repository", "[getDigitalContents] Cache miss")
             try {
                 val digitalContents = api.getDigitalContents(id, context.packageName)
+                Log.i("Prodigi.API", "[getDigitalContents] $digitalContents")
                 val expirationTime = System.currentTimeMillis() + expirationPeriod
                 val content = digitalContents.data
                 db.contentsDao.upsertContent(content.toContentEntity(expirationTime))
-
-                Log.i("Prodigi.Repository", "[getDigitalContents] Updated: $content")
                 emit(LoadDataStatus.Success(digitalContents.data))
             } catch (e: Exception) {
                 Log.e("Prodigi.Repository", "[getDigitalContents] Error: ${e.message}")
@@ -65,6 +64,10 @@ class ProdigiRepositoryImpl(
             db.contentsDao.getAllContentsWithFilter(filter)
         }
         emit(LoadDataStatus.Success(localContent))
+        Log.i(
+            "Prodigi.Repository",
+            "[getFilteredContents] Load Cache: ${localContent.size} -> $localContent"
+        )
 
         val currentTime = System.currentTimeMillis()
         val expiredContent = localContent.filter {
@@ -72,15 +75,26 @@ class ProdigiRepositoryImpl(
         }
 
         if (forceRefresh || expiredContent.isNotEmpty()) {
-            Log.i("Prodigi.Repository", "[getFilteredContents] Cache expired, updating")
+            Log.w("Prodigi.Repository", "[getFilteredContents] Cache expired, updating")
             val packageName = context.packageName
 
             expiredContent.forEach { content ->
-                val result = api.getDigitalContents(content.contentKey, packageName)
-                val expirationTime = System.currentTimeMillis() + expirationPeriod
-                val updatedContent = result.data.toContentEntity(expirationTime)
-                db.contentsDao.upsertContent(updatedContent)
-                Log.i("Prodigi.Repository", "[getFilteredContents] Updated: ${updatedContent.contentKey}")
+                try {
+                    val result = api.getDigitalContents(content.contentKey, packageName)
+                    Log.i("Prodigi.API", "[getDigitalContents.expired.${content.contentKey}] $result")
+                    val expirationTime = System.currentTimeMillis() + expirationPeriod
+                    val updatedContent = result.data.toContentEntity(expirationTime)
+                    db.contentsDao.upsertContent(updatedContent)
+                    Log.i(
+                        "Prodigi.Repository",
+                        "[getFilteredContents.expired.${content.contentKey}] Updated: ${updatedContent.contentKey}"
+                    )
+                } catch (e: Exception) {
+                    Log.e(
+                        "Prodigi.Repository",
+                        "[getFilteredContents.expired.${content.contentKey}] Error: ${e.message}"
+                    )
+                }
             }
         }
     }
@@ -100,11 +114,13 @@ class ProdigiRepositoryImpl(
             Log.w("Prodigi.Repository", "[getBannerItems] Cache miss")
             try {
                 val bannerItems = api.getBannerItems()
+                Log.i("Prodigi.API", "[getBannerItems] $bannerItems")
                 val expirationTime = currentTime + expirationPeriod
                 val bannerItemEntities = bannerItems.data.map { it.toEntity(expirationTime) }
                 db.bannerItemsDao.upsertBannerItems(bannerItemEntities)
                 emit(LoadDataStatus.Success(bannerItems.data))
             } catch (e: Exception) {
+                Log.e("Prodigi.Repository", "[getBannerItems] Error: ${e.message}")
                 emit(LoadDataStatus.Error("Error loading banner items", cachedBannerItems.map { it.toBannerItem() }))
             }
         }
@@ -124,17 +140,19 @@ class ProdigiRepositoryImpl(
             Log.w("Prodigi.Repository", "[getWorkSheet.$id] Cache miss")
             try {
                 val conf = api.getWorksheetConf(id)
+                Log.i("Prodigi.API", "[getWorkSheet.$id] $conf")
                 val expirationTime = currentTime + expirationPeriod
                 val workSheetsEntity = conf.data.toEntity(expirationTime)
                 db.workSheetsDao.upsertWorkSheet(workSheetsEntity)
                 emit(LoadDataStatus.Success(conf.data))
             } catch (e: Exception) {
+                Log.e("Prodigi.Repository", "[getWorkSheet.$id] Error: ${e.message}")
                 emit(LoadDataStatus.Error("Error load worksheet conf"))
             }
         }
     }
 
-    override suspend fun saveProfile(
+    override suspend fun upsertSubmission(
         id: Int?,
         workSheetId: String,
         name: String,
@@ -153,10 +171,27 @@ class ProdigiRepositoryImpl(
             answers = answers
         )
 
-        val submissionId = db.submissionDao.upsertSubmission(submission)
-        Log.i("Prodigi.Repository", "[new.submission.$workSheetId] SubmissionID: $submissionId")
+        try {
+            val submissionId = db.submissionDao.upsertSubmission(submission)
+            Log.i("Prodigi.Repository", "[upsertSubmission.$workSheetId] SubmissionID: $submissionId | $submission")
 
-        return submissionId.toInt()
+            return submissionId.toInt()
+        } catch (e: Exception) {
+            Log.e("Prodigi.Repository", "[upsertSubmission.$workSheetId] Error saving submission: ${e.message}")
+            throw e
+        }
+    }
+
+    override suspend fun getSubmissionOnWorkSheetId(workSheetId: String): Flow<LoadDataStatus<SubmissionEntity?>> = flow {
+        emit(LoadDataStatus.Loading())
+        try {
+            val submissions = db.submissionDao.getSubmissionsByWorksheetUuid(workSheetId)
+            emit(LoadDataStatus.Success(submissions))
+            Log.i("Prodigi.Repository", "[getSubmissionOnWorkSheetId.$workSheetId] $submissions")
+        } catch (e: Exception) {
+            Log.e("Prodigi.Repository", "[getSubmissionOnWorkSheetId.$workSheetId] Error getting submission: ${e.message}")
+            emit(LoadDataStatus.Error("Error load submission"))
+        }
     }
 
     override suspend fun getSubmissionById(id: Int): Flow<LoadDataStatus<Submission>> = flow {
@@ -164,8 +199,10 @@ class ProdigiRepositoryImpl(
 
         val submission = db.submissionDao.getSubmissionById(id)
         if (submission == null) {
+            Log.e("Prodigi.Repository", "[getSubmissionById.$id] Submission not found")
             emit(LoadDataStatus.Error("Submission not found"))
         } else {
+            Log.i("Prodigi.Repository", "[getSubmissionById.$id] $submission")
             emit(LoadDataStatus.Success(submission.toSubmission()))
         }
     }
@@ -173,7 +210,7 @@ class ProdigiRepositoryImpl(
     override suspend fun submitEvaluateAnswer(submissionId: Int, workSheetId: String, submission: Submission): Flow<LoadDataStatus<Submission>> = flow {
         emit(LoadDataStatus.Loading())
         val result: SubmissionResult = api.submitWorksheet(workSheetId, submission.toSubmissionBody())
-        Log.i("Prodigi.API", "[submit.answer.$workSheetId] $result")
+        Log.i("Prodigi.API", "[submitEvaluateAnswer.$workSheetId] $result")
 
         if (result.success) {
             emit(LoadDataStatus.Success(result.data))
@@ -181,9 +218,9 @@ class ProdigiRepositoryImpl(
                 .copy(answers = submission.answers)
                 .toSubmissionEntity(submissionId, workSheetId)
             db.submissionDao.upsertSubmission(finalSubmissionEntity)
-            Log.i("Prodigi.Repository", "[submit.answer.$workSheetId] SubmissionID: $submissionId, score: ${finalSubmissionEntity.totalPoints}")
+            Log.i("Prodigi.Repository", "[submitEvaluateAnswer.$workSheetId] Marked as \"DONE\"; SubmissionID: $submissionId, score: ${finalSubmissionEntity.totalPoints}")
         } else {
-            Log.e("Prodigi.Repository", "[submit.answer.$workSheetId] Failed to evaluate answers, $result")
+            Log.e("Prodigi.Repository", "[submitEvaluateAnswer.$workSheetId] Failed to evaluate answers, $result")
             emit(LoadDataStatus.Error("Failed to evaluate answers", submission))
         }
     }

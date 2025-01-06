@@ -16,6 +16,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -32,12 +34,7 @@ val optionsLabel = listOf("A", "B", "C", "D", "E")
 
 @Composable
 fun OptionsCard(answers: MutableState<List<Int>>, option: Int, index: Int, modifier: Modifier = Modifier) {
-    val selected: MutableState<Int?> = remember {
-        answers.value.getOrNull(index)?.let { idx ->
-            val value: Int? = if (idx >0 ) { idx } else { null }
-            mutableStateOf(value)
-        } ?: mutableStateOf(null)
-    }
+    val selectedOption by remember { derivedStateOf { answers.value[index] } }
 
     Column(modifier) {
         Row(
@@ -50,30 +47,27 @@ fun OptionsCard(answers: MutableState<List<Int>>, option: Int, index: Int, modif
         ) {
             Text(text = "No. ${index + 1}", style = TextStyle(fontSize = 16.sp))
 
-            selected.value?.let { slt ->
-                Button(
-                    onClick = {
-                        selected.value = null
-                        answers.value = answers.value.toMutableList().apply {
-                            removeAt(index)
-                            add(index, -1)
-                        }
-                    },
-                    colors = ButtonDefaults.outlinedButtonColors(),
-                    contentPadding = PaddingValues(vertical = 0.dp, horizontal = 10.dp),
-                ) {
-                    Text(text = stringResource(R.string.worksheet_clear_answer), style = TextStyle(fontSize = 20.sp))
-                }
+            Button(
+                onClick = {
+                    answers.value = answers.value.toMutableList().apply {
+                        removeAt(index)
+                        add(index, -1)
+                    }
+                },
+                colors = ButtonDefaults.outlinedButtonColors(),
+                contentPadding = PaddingValues(vertical = 0.dp, horizontal = 10.dp),
+            ) {
+                Text(text = stringResource(R.string.worksheet_clear_answer), style = TextStyle(fontSize = 20.sp))
             }
         }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(36.dp),
-            horizontalArrangement =  Arrangement.spacedBy(5.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
         ) {
             for (ops in 0..<option) {
-                val isSelected = selected.value == ops
+                val isSelected = selectedOption == ops
                 val colors = if (isSelected) {
                     ButtonDefaults.buttonColors()
                 } else {
@@ -91,13 +85,11 @@ fun OptionsCard(answers: MutableState<List<Int>>, option: Int, index: Int, modif
 
                 Button(
                     onClick = {
-                        selected.value = ops
-                        // replace if any
                         answers.value = answers.value.toMutableList().apply {
                             removeAt(index)
                             add(index, ops)
                         }
-                        Log.i("Prodigi.Repository", "answers: $answers")
+                        Log.i("Prodigi.OptionsCard", "answers: $answers")
                     },
                     modifier = Modifier
                         .fillMaxWidth()

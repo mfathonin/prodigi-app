@@ -15,16 +15,18 @@ class DataSyncWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        Log.i("Prodigi.Repository", "DataSyncWorker started")
+        Log.i("Prodigi.DataSync", "DataSyncWorker started")
         val context = applicationContext
         val repository = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
 
         return try {
             repository.getBannerItems(forceRefresh = true).first()
             repository.getFilteredContents("", forceRefresh = true).first()
+            Log.i("Prodigi.DataSync", "DataSyncWorker finished")
 
             Result.success()
         } catch (e: Exception) {
+            Log.e("Prodigi.DataSync", "DataSyncWorker failed: ${e.message}")
             Result.retry()
         }
     }

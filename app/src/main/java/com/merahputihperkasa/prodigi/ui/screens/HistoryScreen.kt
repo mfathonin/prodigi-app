@@ -1,5 +1,6 @@
 package com.merahputihperkasa.prodigi.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -105,8 +106,11 @@ fun HistoryScreen(navController: NavController, modifier: Modifier = Modifier) {
         } else 0
 
         LaunchedEffect(key1 = searchValue) {
-            scope.launch {
-                loadContents(contentListFlow, prodigiRepository, searchValue)
+            if (searchValue.isNotEmpty()) {
+                scope.launch {
+                    loadContents(contentListFlow, prodigiRepository, searchValue)
+                    Log.i("Prodigi.History", "[loadContents.query.$searchValue] $contentListFlow")
+                }
             }
         }
 
@@ -116,6 +120,7 @@ fun HistoryScreen(navController: NavController, modifier: Modifier = Modifier) {
                 if (event == Lifecycle.Event.ON_RESUME) {
                     scope.launch {
                         loadContents(contentListFlow, prodigiRepository, searchValue)
+                        Log.i("Prodigi.History", "[loadContents.ON_RESUME] $contentListFlow")
                     }
                 }
             }

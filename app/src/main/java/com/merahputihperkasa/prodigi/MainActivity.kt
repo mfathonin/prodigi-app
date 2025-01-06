@@ -73,7 +73,9 @@ class MainActivity : ComponentActivity() {
                     val id = backStackEntry.arguments?.getInt("id")
                     val worksheetId = backStackEntry.arguments?.getString("worksheetId")
                     if (id != null && worksheetId != null) {
-                        WorkSheetScreen(id, worksheetId)
+                        WorkSheetScreen(id, worksheetId) {
+                            navController.popBackStack<WorksheetDetail>(true)
+                        }
                     }
                 }
             }

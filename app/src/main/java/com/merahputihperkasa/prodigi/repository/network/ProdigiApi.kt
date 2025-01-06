@@ -14,24 +14,26 @@ import retrofit2.http.Query
 
 interface ProdigiApi {
     companion object {
-        var BASE_URL = "https://${ProdigiApp.appModule.internalSourceDomain}"
+        private val API_VERSION = "v${ProdigiApp.appModule.apiVersion}"
+        private val API_HOST = ProdigiApp.appModule.internalSourceDomain
+        var BASE_URL = "https://$API_HOST/api/$API_VERSION/"
     }
 
-    @GET("/api/v2/links/{id}")
+    @GET("links/{id}")
     suspend fun getDigitalContents(
         @Path("id") id: String,
         @Query("app") appId: String,
     ): DigitalContentResult
 
-    @GET("api/v2/banners")
+    @GET("banners")
     suspend fun getBannerItems(): BannerItemResult
 
-    @GET("/api/v2/quiz/{id}")
+    @GET("quiz/{id}")
     suspend fun getWorksheetConf(
         @Path("id") id: String,
     ): WorkSheetResult
 
-    @POST("/api/v2/quiz/{id}")
+    @POST("quiz/{id}")
     suspend fun submitWorksheet(
         @Path("id") id: String,
         @Body body: SubmissionBody

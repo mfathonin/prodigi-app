@@ -20,6 +20,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -52,7 +53,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 @Composable
-fun WorkSheetScreen(id: Int, workSheetId: String) {
+fun WorkSheetScreen(id: Int, workSheetId: String, onEvaluateSuccess: () -> Unit = {}) {
     val context = LocalContext.current
     val repo = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
 
@@ -62,6 +63,8 @@ fun WorkSheetScreen(id: Int, workSheetId: String) {
     val submissionFlow = remember {
         MutableStateFlow<LoadDataStatus<Submission>>(LoadDataStatus.Loading())
     }
+    val workSheet = workSheetFlow.collectAsState()
+    val submission = submissionFlow.collectAsState()
 
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -84,16 +87,16 @@ fun WorkSheetScreen(id: Int, workSheetId: String) {
         Scaffold(
             content = { paddingValues ->
                 WorkSheetScreenContent(
-                    workSheetFlow,
-                    submissionFlow,
+                    workSheet,
+                    submission,
                     modifier = Modifier
                         .padding(paddingValues),
                     onSave =  { answers ->
                         scope.launch {
                             saveAnswers(
                                 submissionId = id,
-                                workSheetFlow.value.data!!,
-                                submissionFlow.value.data!!,
+                                workSheet.value.data!!,
+                                submission.value.data!!,
                                 answers,
                                 repo
                             )
@@ -102,13 +105,18 @@ fun WorkSheetScreen(id: Int, workSheetId: String) {
                     onSubmit = { answers ->
                         Log.i("Prodigi.Worksheet", "submit.answers: $answers")
                         scope.launch {
-                            submitAnswer(
-                                id,
-                                workSheetFlow.value.data!!,
-                                submissionFlow.value.data!!,
-                                answers,
-                                repo
-                            )
+                            try {
+                                submitAnswer(
+                                    id,
+                                    workSheetFlow.value.data!!,
+                                    submissionFlow.value.data!!,
+                                    answers,
+                                    repo
+                                )
+                                onEvaluateSuccess.invoke()
+                            } catch (e: Exception) {
+                                Log.e("Prodigi.Worksheet", "submit.error: $e")
+                            }
                         }
                     }
                 )
@@ -123,7 +131,7 @@ suspend fun loadWorkSheet(
     stateFlow: MutableStateFlow<LoadDataStatus<WorkSheet>>
 ) {
     repo.getWorkSheetConfig(workSheetId, false).collect { conf ->
-        Log.i("Prodigi.Repository", "[load.workSheet.$workSheetId] ${conf.data}")
+        Log.i("Prodigi.WorkSheet", "[load.workSheet.$workSheetId] ${conf.data}")
         stateFlow.value = conf
     }
 }
@@ -135,7 +143,7 @@ suspend fun loadSubmission(
 ) {
     val submissionId = "$id".toInt(10)
     repo.getSubmissionById(submissionId).collect { submission ->
-        Log.i("Prodigi.Repository", "[load.submission.$submissionId] ${submission.data}")
+        Log.i("Prodigi.WorkSheet", "[load.submission.$submissionId] ${submission.data}")
         stateFlow.value = submission
     }
 }
@@ -149,7 +157,7 @@ suspend fun saveAnswers(
 ) {
     // cap the answer to worksheet.counts
     val cleanAnswers = answers.take(workSheet.counts)
-    repo.saveProfile(
+    repo.upsertSubmission(
         id = submissionId,
         workSheet.uuid,
         submission.profile.name,
@@ -176,27 +184,18 @@ suspend fun submitAnswer(
             answers = cleanAnswers
         )
     ).collect { res ->
-        Log.i("Prodigi.Repository", "[evaluate.answer.$submissionId] $res")
+        Log.i("Prodigi.WorkSheet", "[evaluate.answer.$submissionId] $res")
     }
 }
 
 @Composable
 fun WorkSheetScreenContent(
-    workSheetFlow: MutableStateFlow<LoadDataStatus<WorkSheet>> = MutableStateFlow(LoadDataStatus.Loading()),
-    submissionFlow: MutableStateFlow<LoadDataStatus<Submission>> = MutableStateFlow(LoadDataStatus.Loading()),
+    workSheetState: State<LoadDataStatus<WorkSheet>>,
+    submission: State<LoadDataStatus<Submission>>,
     modifier: Modifier = Modifier,
     onSave: (answers: List<Int>) -> Unit = {},
     onSubmit: (answers: List<Int>) -> Unit = {}
 ) {
-    val workSheet = workSheetFlow.collectAsState()
-    val submission = submissionFlow.collectAsState()
-
-    val count by remember { derivedStateOf { workSheet.value.data?.counts } }
-    val options by remember { derivedStateOf { workSheet.value.data?.options } }
-    val answers = remember { mutableStateOf(submission.value.data?.answers.let { answers ->
-        answers ?: List(0) { -1 }
-    }) }
-
     ConstraintLayout(
         modifier
             .padding(horizontal = 20.dp)
@@ -204,12 +203,34 @@ fun WorkSheetScreenContent(
     ) {
         val (header, optionsListSection, submitButton) = createRefs()
 
-        if (workSheet.value is LoadDataStatus.Success && submission.value is LoadDataStatus.Success) {
-            if (answers.value.isEmpty() && count != null) {
+        if (workSheetState.value is LoadDataStatus.Success && submission.value is LoadDataStatus.Success) {
+            val workSheet by remember { derivedStateOf { workSheetState.value.data } }
+            val count by remember { derivedStateOf { workSheet?.counts } }
+            val options by remember { derivedStateOf { workSheet?.options } }
+            val answers = remember {
+                mutableStateOf(submission.value.data?.answers ?: List(0) { -1 })
+            }
+            val isFinished by remember { derivedStateOf {
+                answers.value.filter { it != -1 }.size == count
+            }}
+
+            val saveButtonColor = if (isFinished) {
+                ButtonDefaults.buttonColors()
+            } else {
+                ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            val saveButtonLabel = if (isFinished) {
+                stringResource(R.string.worksheet_button_finish) } else {
+                stringResource(R.string.worksheet_button_save) }
+
+
+
+            if (answers.value.size != count) {
                 answers.value = List(count!!) { -1 }
             }
-
-            val conf = workSheet.value.data
 
             Column(Modifier
                 .constrainAs(header) {
@@ -220,10 +241,10 @@ fun WorkSheetScreenContent(
                 .fillMaxWidth()
             ) {
                 Spacer(Modifier.height(30.dp))
-                conf?.bookTitle?.let { bookTitle ->
+                workSheet?.bookTitle?.let { bookTitle ->
                     Text(bookTitle, fontSize = 16.sp)
                 }
-                conf?.contentTitle?.let { contentTitle ->
+                workSheet?.contentTitle?.let { contentTitle ->
                     Text(
                         contentTitle,
                         modifier = Modifier.padding(vertical = 4.dp),
@@ -271,15 +292,6 @@ fun WorkSheetScreenContent(
                 }
             }
 
-            val isFinished = answers.value.filter { it != -1 }.size == count
-            val saveButtonColor = if (isFinished) {
-                ButtonDefaults.buttonColors()
-            } else {
-                ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
             Button(
                 onClick = {
                     if (isFinished) {
@@ -297,21 +309,18 @@ fun WorkSheetScreenContent(
                     .fillMaxWidth()
                     .padding(bottom = 20.dp)
             ) {
-                val label = if (isFinished) {
-                    stringResource(R.string.worksheet_button_finish) } else {
-                    stringResource(R.string.worksheet_button_save) }
-                Text(label)
+                Text(saveButtonLabel)
             }
         }
 
         // Loading State
-        if (workSheet.value is LoadDataStatus.Loading || submission.value is LoadDataStatus.Loading) {
+        if (workSheetState.value is LoadDataStatus.Loading || submission.value is LoadDataStatus.Loading) {
             LoadingState()
         }
 
         // Error worksheet state
-        if (workSheet.value is LoadDataStatus.Error) {
-            val error = workSheet.value as LoadDataStatus.Error
+        if (workSheetState.value is LoadDataStatus.Error) {
+            val error = workSheetState.value as LoadDataStatus.Error
             ErrorState(
                 error = error,
                 errorDescriptor = "Error loading worksheet"
@@ -339,24 +348,26 @@ fun WorkSheetScreenContent(
 @Preview(showBackground = true)
 @Composable
 fun WorkSheetScreenContentPreview() {
+    val workSheet = MutableStateFlow(LoadDataStatus.Success(
+        WorkSheet(
+            id = "worksheet-id",
+            uuid = "worksheet-uuid",
+            bookId = "book-uuid",
+            bookTitle = "Sample Book Title",
+            contentTitle = "Sample Content Title",
+            counts = 10,
+            options = listOf(4,4,3,5,2,4,4,4,4,4),
+            points = List(10) { 5 }
+        )
+    )).collectAsState()
+    val submission = MutableStateFlow(LoadDataStatus.Success(
+        Submission(
+            profile = Profile("name", "13", "claasName", "SchoolName"),
+            answers = List(10) { -1 }
+        )
+    )).collectAsState()
     WorkSheetScreenContent(
-        workSheetFlow = MutableStateFlow(LoadDataStatus.Success(
-            WorkSheet(
-                id = "worksheet-id",
-                uuid = "worksheet-uuid",
-                bookId = "book-uuid",
-                bookTitle = "Sample Book Title",
-                contentTitle = "Sample Content Title",
-                counts = 10,
-                options = listOf(4,4,3,5,2,4,4,4,4,4),
-                points = List(10) { 5 }
-            )
-        )),
-        submissionFlow = MutableStateFlow(LoadDataStatus.Success(
-            Submission(
-                profile = Profile("name", "13", "claasName", "SchoolName"),
-                answers = List(10) { -1 }
-            )
-        ))
+        workSheet,
+        submission
     )
 }

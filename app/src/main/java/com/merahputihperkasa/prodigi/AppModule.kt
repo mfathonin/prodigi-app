@@ -15,19 +15,18 @@ import retrofit2.converter.gson.GsonConverterFactory
 interface AppModule {
     val db: ContentsDatabase
     val api: ProdigiApi
+    val apiVersion: Int
     val internalSourceTag: String
     val internalSourceDomain: String
-    @Suppress("SameReturnValue")
     val internalSourceModules: String
 }
 
 class AppReleaseModule(
     private val appContext: Context
 ): AppModule {
-    override val internalSourceDomain: String
-        get() = "mpp-hub.netlify.app"
-    override val internalSourceModules: String
-        get() = "/links"
+    override val apiVersion = 1
+    override val internalSourceDomain = "mpp-hub.netlify.app"
+    override val internalSourceModules = "/links"
     override val internalSourceTag: String
         get() = internalSourceDomain + internalSourceModules
 
@@ -63,10 +62,9 @@ class AppReleaseModule(
 class AppDebugModule(
     private val appContext: Context
 ): AppModule {
-    override val internalSourceDomain: String
-        get() = "develop--mpp-hub.netlify.app"
-    override val internalSourceModules: String
-        get() = "/links"
+    override val apiVersion = 2
+    override val internalSourceDomain = "develop--mpp-hub.netlify.app"
+    override val internalSourceModules = "/links"
     override val internalSourceTag: String
         get() = internalSourceDomain + internalSourceModules
 
