@@ -28,4 +28,11 @@
     <string name="worksheet_button_finish">Selesai</string>
     <string name="worksheet_button_save">Simpan</string>
     <string name="worksheet_clear_answer">Hapus</string>
+    <string name="press_again_to_exit">Tekan kembali untuk menutup lembar kerja</string>
+    <string name="submission_saved">Lembar jawab tersimpan</string>
+    <string name="submission_saving_label">Menyimpan lembar jawab</string>
+    <string name="worksheet_submit_button_label">Kirim</string>
+    <string name="general_cancle_button_label">Batal</string>
+    <string name="worksheet_confirmation_title">Mengirim Lembar Jawab</string>
+    <string name="worksheet_confirmation_desc">Apakah anda yakin ingin mengirim lembar jawab ini?</string>
 </resources>

@@ -47,17 +47,24 @@ fun OptionsCard(answers: MutableState<List<Int>>, option: Int, index: Int, modif
         ) {
             Text(text = "No. ${index + 1}", style = TextStyle(fontSize = 16.sp))
 
-            Button(
-                onClick = {
-                    answers.value = answers.value.toMutableList().apply {
-                        removeAt(index)
-                        add(index, -1)
-                    }
-                },
-                colors = ButtonDefaults.outlinedButtonColors(),
-                contentPadding = PaddingValues(vertical = 0.dp, horizontal = 10.dp),
-            ) {
-                Text(text = stringResource(R.string.worksheet_clear_answer), style = TextStyle(fontSize = 20.sp))
+            if (selectedOption in 0..option) {
+                Button(
+                    onClick = {
+                        answers.value = answers.value.toMutableList().apply {
+                            removeAt(index)
+                            add(index, -1)
+                        }
+                    },
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error,
+                    ),
+                    contentPadding = PaddingValues(vertical = 0.dp, horizontal = 10.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.worksheet_clear_answer),
+                        style = TextStyle(fontSize = 20.sp)
+                    )
+                }
             }
         }
         Row(

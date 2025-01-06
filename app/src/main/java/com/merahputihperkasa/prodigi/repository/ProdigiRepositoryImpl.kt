@@ -161,12 +161,21 @@ class ProdigiRepositoryImpl(
         schoolName: String,
         answers: List<Int>
     ): Int {
-        val submission = SubmissionEntity(
-            id = id ?: 0,
+        val existingSubmission = if (id != null && id >= 0) {
+            db.submissionDao.getSubmissionById(id)
+        } else {
+            null
+        }
+        val submission = existingSubmission?.copy(
             name = name,
             idNumber = idNumber,
             className = className,
             schoolName = schoolName,
+            worksheetUuid = workSheetId,
+            answers = answers
+        ) ?: SubmissionEntity(
+            id = id ?: 0,
+            name, idNumber, className, schoolName,
             worksheetUuid = workSheetId,
             answers = answers
         )
