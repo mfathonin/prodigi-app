@@ -23,6 +23,7 @@ serialization = "1.7.3"
 workRuntimeKtx = "2.10.0"
 constraintlayout = "2.2.0"
 constraintlayoutCompose = "1.1.0"
+squircle-shape = "3.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -53,6 +54,7 @@ room-coroutine = { module = "androidx.room:room-ktx", version.ref = "room" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization"}
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayoutCompose" }
+squircle-shape = { group = "io.github.stoyan-vuchev", name = "squircle-shape-android", version.ref = "squircle-shape" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -3,12 +3,16 @@ package com.merahputihperkasa.prodigi.ui.theme
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import sv.lib.squircleshape.CornerSmoothing
+import sv.lib.squircleshape.SquircleShape
 
 private val DarkColorScheme = darkColorScheme(
     primary = Primary800,
@@ -53,9 +57,16 @@ fun ProdigiBookReaderTheme(
         else -> LightColorScheme
     }
 
+    val shapes = Shapes(
+        small = SquircleShape(radius = 16.dp, cornerSmoothing = CornerSmoothing.Medium),
+        medium = SquircleShape(radius = 32.dp, cornerSmoothing = CornerSmoothing.Medium),
+        large = SquircleShape(percent = 100, cornerSmoothing = CornerSmoothing.Medium)
+    )
+
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
+        content = content,
+        shapes = shapes,
     )
 }

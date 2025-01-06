@@ -13,3 +13,9 @@ data class WorksheetDetail(val id: String)
 
 @Serializable
 data class WorkSheet(val id: Int, val worksheetId: String)
+
+@Serializable
+data class WorkSheetEvaluation(val submissionId: Int)
+
+@Serializable
+data class SubmissionHistory(val worksheetUUID: String)

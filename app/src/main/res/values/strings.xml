@@ -19,12 +19,12 @@
     <string name="worksheet_title">Lembar Kerja</string>
     <string name="error_load_worksheet">memuat lembar kerja</string>
     <string name="error_worksheet_descriptor">lembar kerja</string>
-    <string name="worksheet_question_numbers">%1$s Pertanyaan</string>
+    <string name="worksheet_question_numbers">%1$s Soal</string>
     <string name="profile_field_class_name">Kelas</string>
-    <string name="profile_field_id_number">Nomor Absen</string>
+    <string name="profile_field_id_number">Nomor Urut</string>
     <string name="profile_field_name">Nama</string>
     <string name="profile_field_school_name">Sekolah</string>
-    <string name="worksheet_start_button_label">Mulai</string>
+    <string name="worksheet_start_button_label">Mulai mengerjakan</string>
     <string name="worksheet_button_finish">Selesai</string>
     <string name="worksheet_button_save">Simpan</string>
     <string name="worksheet_clear_answer">Hapus</string>
@@ -35,4 +35,6 @@
     <string name="general_cancle_button_label">Batal</string>
     <string name="worksheet_confirmation_title">Mengirim Lembar Jawab</string>
     <string name="worksheet_confirmation_desc">Apakah anda yakin ingin mengirim lembar jawab ini?</string>
+    <string name="worksheet_personal_info_title">Data diri</string>
+    <string name="worksheet_personal_info_desc">Lengkapi data diri untuk membuka lembar jawab</string>
 </resources>

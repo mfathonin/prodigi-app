@@ -1,11 +1,19 @@
 package com.merahputihperkasa.prodigi.ui.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -16,24 +24,36 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.merahputihperkasa.prodigi.ProdigiApp
 import com.merahputihperkasa.prodigi.R
-import com.merahputihperkasa.prodigi.models.Profile
+import com.merahputihperkasa.prodigi.models.SubmissionEntity
+import com.merahputihperkasa.prodigi.models.WorkSheet
 import com.merahputihperkasa.prodigi.repository.ProdigiRepositoryImpl
 import kotlinx.coroutines.launch
+import sv.lib.squircleshape.CornerSmoothing
+import sv.lib.squircleshape.SquircleShape
 
 @Composable
 fun ProfileForm(
-    workSheetId: String, count: Int,
-    profile: Profile? = null, submissionId: Int? = null, answers: List<Int>? = null,
-    onSubmitted: (id: Int) -> Unit
+    workSheet: WorkSheet,
+    submission: SubmissionEntity? = null,
+    onSubmitted: (id: Int) -> Unit = {},
 ) {
     val context = LocalContext.current
     val repo = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
+    val profile = submission?.toSubmission()?.profile
+    val workSheetId = workSheet.uuid
+    val count = workSheet.counts
+    val submissionId = submission?.id
+    val answers = submission?.answers
 
     var name by rememberSaveable { mutableStateOf(profile?.name ?: "") }
     var idNumber by rememberSaveable { mutableStateOf(profile?.idNumber ?: "") }
@@ -46,42 +66,74 @@ fun ProfileForm(
     }
     val scope = rememberCoroutineScope()
 
-    OutlinedTextField(
-        value = name,
-        onValueChange = { name = it },
-        label = { Text(stringResource(R.string.profile_field_name)) },
-        modifier = Modifier.fillMaxWidth(),
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+    val keyboardOptions = KeyboardOptions(
+        imeAction = ImeAction.Next,
+        capitalization = KeyboardCapitalization.Words
     )
-    Spacer(modifier = Modifier.height(8.dp))
-    OutlinedTextField(
-        value = idNumber,
-        onValueChange = { idNumber = it },
-        label = { Text(stringResource(R.string.profile_field_id_number)) },
-        modifier = Modifier.fillMaxWidth(),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-        singleLine = true
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    OutlinedTextField(
-        value = className,
-        onValueChange = { className = it },
-        label = { Text(stringResource(R.string.profile_field_class_name)) },
-        modifier = Modifier.fillMaxWidth(),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-        singleLine = true
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    OutlinedTextField(
-        value = schoolName,
-        onValueChange = { schoolName = it },
-        label = { Text(stringResource(R.string.profile_field_school_name)) },
-        modifier = Modifier.fillMaxWidth(),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        singleLine = true
-    )
-    Spacer(modifier = Modifier.height(32.dp))
+
+    var containerWidth = LocalConfiguration.current.screenWidthDp.dp - 40.dp
+    if (containerWidth > 500.dp) {
+        containerWidth = 500.dp
+    }
+
+    val borderShape = SquircleShape(32.dp, CornerSmoothing.High)
+    Column(
+        Modifier
+            .requiredWidth(containerWidth)
+            .clip(borderShape)
+            .border(
+                BorderStroke(
+                    1.dp,
+                    MaterialTheme.colorScheme.surfaceTint.copy(alpha = .7f)
+                ),
+                borderShape
+            )
+            .padding(15.dp),
+        Arrangement.spacedBy(4.dp)
+    ) {
+        Column {
+            Text(stringResource(R.string.worksheet_personal_info_title), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.worksheet_personal_info_desc), style = MaterialTheme.typography.labelSmall, modifier = Modifier.alpha(.4f))
+        }
+        Spacer(Modifier.height(12.dp))
+        RoundedTextField(
+            label = stringResource(R.string.profile_field_name),
+            value = name,
+            onValueChange = { name = it },
+            required = true,
+            keyboardOptions = keyboardOptions
+        )
+        val rowWidth = containerWidth - 30.dp
+        Row(Modifier.requiredWidth(rowWidth)) {
+            val fieldWidth = (rowWidth - 10.dp) / 2
+            RoundedTextField(
+                value = className,
+                onValueChange = { className = it },
+                label = stringResource(R.string.profile_field_class_name),
+                required = true,
+                modifier = Modifier.requiredWidth(fieldWidth),
+                keyboardOptions = keyboardOptions,
+            )
+            Spacer(Modifier.width(10.dp))
+            RoundedTextField(
+                value = idNumber,
+                onValueChange = { idNumber = it },
+                label = stringResource(R.string.profile_field_id_number),
+                keyboardOptions = keyboardOptions,
+                required = true,
+                modifier = Modifier.requiredWidth(fieldWidth),
+            )
+        }
+        RoundedTextField(
+            value = schoolName,
+            onValueChange = { schoolName = it },
+            label = stringResource(R.string.profile_field_school_name),
+            required = true,
+            keyboardOptions = keyboardOptions,
+        )
+    }
+
+    Spacer(modifier = Modifier.height(20.dp))
     Button(
         onClick = {
             if (isFormValid) {
@@ -99,9 +151,11 @@ fun ProfileForm(
             }
         },
         enabled = isFormValid,
-        modifier = Modifier.fillMaxWidth()
+        shape = MaterialTheme.shapes.large,
+        contentPadding = PaddingValues(horizontal = 20.dp),
+        modifier = Modifier.height(36.dp)
     ) {
         Text(stringResource(R.string.worksheet_start_button_label))
     }
-    Spacer(modifier = Modifier.height(40.dp))
+    Spacer(modifier = Modifier.height(15.dp))
 }
