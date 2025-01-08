@@ -58,11 +58,11 @@ fun OptionsCard(answers: MutableState<List<Int>>, option: Int, index: Int, modif
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.error,
                     ),
+                    shape = MaterialTheme.shapes.medium,
                     contentPadding = PaddingValues(vertical = 0.dp, horizontal = 10.dp),
                 ) {
                     Text(
                         text = stringResource(R.string.worksheet_clear_answer),
-                        style = TextStyle(fontSize = 20.sp)
                     )
                 }
             }
@@ -85,8 +85,8 @@ fun OptionsCard(answers: MutableState<List<Int>>, option: Int, index: Int, modif
                 } else {
                     BorderStroke(
                         1.dp,
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                            .copy(alpha = .1f)
+                        MaterialTheme.colorScheme.onSurface
+                            .copy(alpha = .3f)
                     )
                 }
 
@@ -101,7 +101,7 @@ fun OptionsCard(answers: MutableState<List<Int>>, option: Int, index: Int, modif
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = MaterialTheme.shapes.medium,
                     colors =  colors,
                     border = border
                 ) {

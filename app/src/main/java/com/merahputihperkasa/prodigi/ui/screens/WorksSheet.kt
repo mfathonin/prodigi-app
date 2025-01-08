@@ -4,27 +4,34 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -36,9 +43,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,6 +74,7 @@ import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WorkSheetScreen(id: Int, workSheetId: String, onEvaluateSuccess: () -> Unit = {}) {
     val context = LocalContext.current
@@ -138,43 +150,47 @@ fun WorkSheetScreen(id: Int, workSheetId: String, onEvaluateSuccess: () -> Unit 
                     lastBackPressTime.longValue = System.currentTimeMillis()
                 }
 
-                WorkSheetScreenContent(
-                    workSheet,
-                    submission,
-                    modifier = Modifier
-                        .padding(paddingValues),
-                    onSave = { answers, callback ->
-                        isLoadingOnSave.value = true
-                        scope.launch {
-                            saveAnswers(
-                                submissionId = id,
-                                workSheet.value.data!!,
-                                submission.value.data!!,
-                                answers,
-                                repo
-                            )
-                            isLoadingOnSave.value = false
-                            callback.invoke()
-                        }
-                    },
-                    onSubmit = { answers ->
-                        Log.i("Prodigi.Worksheet", "submit.answers: $answers")
-                        scope.launch {
-                            try {
-                                submitAnswer(
-                                    id,
-                                    workSheetFlow.value.data!!,
-                                    submissionFlow.value.data!!,
+                CompositionLocalProvider(
+                    LocalOverscrollConfiguration provides null
+                ) {
+                    WorkSheetScreenContent(
+                        workSheet,
+                        submission,
+                        modifier = Modifier
+                            .padding(paddingValues),
+                        onSave = { answers, callback ->
+                            isLoadingOnSave.value = true
+                            scope.launch {
+                                saveAnswers(
+                                    submissionId = id,
+                                    workSheet.value.data!!,
+                                    submission.value.data!!,
                                     answers,
                                     repo
                                 )
-                                onEvaluateSuccess.invoke()
-                            } catch (e: Exception) {
-                                Log.e("Prodigi.Worksheet", "submit.error: $e")
+                                isLoadingOnSave.value = false
+                                callback.invoke()
+                            }
+                        },
+                        onSubmit = { answers ->
+                            Log.i("Prodigi.Worksheet", "submit.answers: $answers")
+                            scope.launch {
+                                try {
+                                    submitAnswer(
+                                        id,
+                                        workSheetFlow.value.data!!,
+                                        submissionFlow.value.data!!,
+                                        answers,
+                                        repo
+                                    )
+                                    onEvaluateSuccess.invoke()
+                                } catch (e: Exception) {
+                                    Log.e("Prodigi.Worksheet", "submit.error: $e")
+                                }
                             }
                         }
-                    }
-                )
+                    )
+                }
             }
         )
     }
@@ -334,15 +350,37 @@ fun WorkSheetScreenContent(
                 .fillMaxWidth()
             ) {
                 Spacer(Modifier.height(30.dp))
-                workSheet?.bookTitle?.let { bookTitle ->
-                    Text(bookTitle, fontSize = 16.sp)
-                }
-                workSheet?.contentTitle?.let { contentTitle ->
-                    Text(
-                        contentTitle,
-                        modifier = Modifier.padding(vertical = 4.dp),
-                        fontSize = 24.sp
-                    )
+                Row(Modifier.fillMaxWidth(), Arrangement.Start) {
+                    Column(
+                        Modifier.size(44.dp).background(MaterialTheme.colorScheme.surfaceTint.copy(alpha = .3f), MaterialTheme.shapes.large),
+                        Arrangement.Center,
+                        Alignment.CenterHorizontally,
+                    ) {
+                        Icon(
+                            painter = painterResource(R.mipmap.ic_logo),
+                            contentDescription = "Question Number",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                    Spacer(Modifier.width(15.dp))
+                    Column(verticalArrangement = Arrangement.SpaceBetween) {
+                        workSheet?.bookTitle?.let { bookTitle ->
+                            Text(
+                                bookTitle,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.W400
+                            )
+                        }
+                        workSheet?.contentTitle?.let { contentTitle ->
+                            Text(
+                                contentTitle,
+                                modifier = Modifier.padding(vertical = 4.dp),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Thin
+                            )
+                        }
+                    }
                 }
             }
 
@@ -364,19 +402,19 @@ fun WorkSheetScreenContent(
                             option = optionsItems[index],
                             index = index,
                         )
+
+                        // Border for non last element
                         if (index != optionsItems.size - 1) {
-                            Box(
+                            Spacer(Modifier.height(15.dp))
+                            Spacer(
                                 Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 10.dp, bottom = 5.dp)
+                                    .fillMaxWidth(.95f)
                                     .height(1.dp)
-                                    .border(
-                                        BorderStroke(
-                                            1.dp,
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                                .copy(alpha = .1f)
-                                        )
+                                    .alpha(.5f)
+                                    .background(
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = .1f)
                                     )
+                                    .align(Alignment.CenterHorizontally)
                             )
                         } else {
                             Box(Modifier.padding(top = 10.dp, bottom = 30.dp))
@@ -400,13 +438,14 @@ fun WorkSheetScreenContent(
                     }
                 },
                 colors = saveButtonColor,
+                shape = MaterialTheme.shapes.large,
                 modifier = Modifier
                     .constrainAs(submitButton) {
                         bottom.linkTo(parent.bottom)
                     }
                     .zIndex(2f)
                     .fillMaxWidth()
-                    .padding(bottom = 20.dp)
+                    .padding(bottom = 20.dp, top = 10.dp)
             ) {
                 Text(saveButtonLabel)
             }

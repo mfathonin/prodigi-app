@@ -247,9 +247,8 @@ fun WorkSheetHeader(workSheet: WorkSheet) {
                         bookTitle,
                         modifier = Modifier.fillMaxWidth(),
                         fontWeight = FontWeight.W400,
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = .7f)
-                        )
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = .7f)
                     )
                 }
                 workSheet.contentTitle?.let { contentTitle ->
@@ -258,9 +257,8 @@ fun WorkSheetHeader(workSheet: WorkSheet) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 15.dp),
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = .9f)
-                        ),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = .9f),
                         fontWeight = FontWeight.Light
                     )
                 }

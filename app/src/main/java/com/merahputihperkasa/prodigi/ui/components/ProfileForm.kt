@@ -92,8 +92,15 @@ fun ProfileForm(
         Arrangement.spacedBy(4.dp)
     ) {
         Column {
-            Text(stringResource(R.string.worksheet_personal_info_title), style = MaterialTheme.typography.titleMedium)
-            Text(stringResource(R.string.worksheet_personal_info_desc), style = MaterialTheme.typography.labelSmall, modifier = Modifier.alpha(.4f))
+            Text(
+                stringResource(R.string.worksheet_personal_info_title),
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                stringResource(R.string.worksheet_personal_info_desc),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = .3f)
+            )
         }
         Spacer(Modifier.height(12.dp))
         RoundedTextField(
@@ -129,7 +136,9 @@ fun ProfileForm(
             onValueChange = { schoolName = it },
             label = stringResource(R.string.profile_field_school_name),
             required = true,
-            keyboardOptions = keyboardOptions,
+            keyboardOptions = keyboardOptions.copy(
+                imeAction = ImeAction.Done
+            ),
         )
     }
 
