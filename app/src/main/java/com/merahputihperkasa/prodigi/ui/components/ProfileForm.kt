@@ -90,11 +90,11 @@ fun ProfileForm(
     ) {
         Column {
             Text(
-                stringResource(R.string.worksheet_personal_info_title),
+                stringResource(R.string.profile_form_title),
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                stringResource(R.string.worksheet_personal_info_desc),
+                stringResource(R.string.profile_form_desc),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = .3f)
             )

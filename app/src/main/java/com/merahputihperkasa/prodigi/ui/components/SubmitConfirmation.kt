@@ -21,7 +21,7 @@ fun SubmitConfimationDialog(isOpen: State<Boolean>, onDismiss: () -> Unit, onCon
                     onClick = { onDismiss.invoke() },
                     colors = ButtonDefaults.outlinedButtonColors()
                 ) {
-                    Text(stringResource(R.string.general_cancle_button_label))
+                    Text(stringResource(R.string.general_cancel_button_label))
                 }
             },
             confirmButton = {

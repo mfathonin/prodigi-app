@@ -185,14 +185,14 @@ fun HistoryScreen(navController: NavController, modifier: Modifier = Modifier) {
                             val error = contentList.value as LoadDataStatus.Error
                             ErrorState(
                                 error = error,
-                                errorDescriptor = stringResource(R.string.error_load_content)
+                                errorDescriptor = stringResource(R.string.content_error_load)
                             )
                         }
 
                         else -> {
                             val contents = (contentList.value as LoadDataStatus.Success).data
                             if (contents.isNullOrEmpty()) {
-                                EmptyState(dataDescription = stringResource(R.string.empty_content_descriptor))
+                                EmptyState(dataDescription = stringResource(R.string.content_empty_descriptor))
                             } else {
                                 contents.forEach { contentEntity ->
                                     val content = contentEntity.toContent()
@@ -229,7 +229,7 @@ fun LoadingState(modifier: Modifier = Modifier) {
     ) {
         CircularProgressIndicator()
         Text(
-            stringResource(R.string.loading), modifier = Modifier.padding(8.dp), color = Color.Black
+            stringResource(R.string.general_load_data), modifier = Modifier.padding(8.dp), color = Color.Black
         )
     }
 }
@@ -252,7 +252,7 @@ fun <T> ErrorState(
                 .padding(vertical = 24.dp)
         )
         Text(
-            stringResource(R.string.error_msg, errorDescriptor), color = Color.Black
+            stringResource(R.string.general_error_msg, errorDescriptor), color = Color.Black
         )
         error.message?.let { msg ->
             Text(
@@ -279,7 +279,7 @@ fun EmptyState(modifier: Modifier = Modifier, dataDescription: String) {
                 .padding(vertical = 24.dp)
         )
         Text(
-            stringResource(R.string.no_data, dataDescription), color = Color.Black
+            stringResource(R.string.general_no_data, dataDescription), color = Color.Black
         )
     }
 }

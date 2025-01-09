@@ -69,9 +69,9 @@ fun ResultBottomSheet(
             }
         }
 
-        var titleId = R.string.internal_content_title
+        var titleId = R.string.qr_content_internal_title
         if (!isInternalSources) {
-            titleId = R.string.external_content_title
+            titleId = R.string.qr_external_content_title
         }
 
         Box {
@@ -106,7 +106,7 @@ fun ResultBottomSheet(
                                 .offset(y = 16.dp),
                         ) {
                             if (isValidUrl) {
-                                Text(stringResource(R.string.url_link_button), color = Color.White)
+                                Text(stringResource(R.string.qr_url_link_button), color = Color.White)
                             } else {
                                 Text(
                                     stringResource(R.string.content_link_button),
@@ -136,7 +136,7 @@ fun ResultBottomSheet(
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp)) {
                                 Text(
-                                    stringResource(R.string.fetch_content_error),
+                                    stringResource(R.string.content_fetch_error),
                                     modifier = Modifier.padding(top = 24.dp)
                                 )
                                 Button(
@@ -150,7 +150,7 @@ fun ResultBottomSheet(
                                         }
                                     }
                                 ) {
-                                    Text(stringResource(R.string.retry_button))
+                                    Text(stringResource(R.string.general_retry_button))
                                 }
                             }
                         }
@@ -160,7 +160,7 @@ fun ResultBottomSheet(
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp)) {
                                 Text(
-                                    stringResource(id = R.string.subtitle_content_list),
+                                    stringResource(id = R.string.content_subtitle_list),
                                     style = MaterialTheme.typography.labelLarge,
                                     color = Secondary800,
                                     modifier = Modifier.padding(bottom = 24.dp, top = 4.dp)

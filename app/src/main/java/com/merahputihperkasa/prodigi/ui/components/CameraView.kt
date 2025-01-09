@@ -98,7 +98,7 @@ fun CameraView(
                 .offset(y = hintOffsetY.dp)
         ) {
             Text(
-                text = stringResource(R.string.welcome_instruction),
+                text = stringResource(R.string.qr_welcome_instruction),
                 modifier = Modifier
                     .fillMaxWidth(0.65f)
                     .align(Alignment.Center),

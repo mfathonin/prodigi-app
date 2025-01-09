@@ -29,7 +29,7 @@ fun CenterTopAppBarTitle(modifier: Modifier = Modifier, scrollBehavior: TopAppBa
     )
 
     Text(
-        stringResource(R.string.history_title),
+        stringResource(R.string.general_history_title),
         modifier
             .fillMaxWidth()
             .padding(end = 16.dp),

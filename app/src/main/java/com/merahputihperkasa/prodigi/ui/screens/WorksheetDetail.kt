@@ -150,7 +150,7 @@ fun WorkSheetDetailScreen(workSheetUUID: String, onNavigateStart: (id: Int, work
                             }
                         } else {
                             EmptyState(
-                                dataDescription = stringResource(R.string.error_worksheet_descriptor)
+                                dataDescription = stringResource(R.string.worksheet_error_descriptor)
                             )
                         }
                     }
@@ -217,7 +217,7 @@ fun WorksheetDetailContent(
             }
             ErrorState(
                 error = error,
-                errorDescriptor = stringResource(R.string.error_load_worksheet)
+                errorDescriptor = stringResource(R.string.worksheet_error_load)
             )
         }
 

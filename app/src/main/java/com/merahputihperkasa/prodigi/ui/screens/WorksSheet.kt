@@ -131,7 +131,7 @@ fun WorkSheetScreen(id: Int, workSheetId: String, onEvaluateSuccess: (id: Int?, 
                     ) {
                         CircularProgressIndicator()
                         Text(
-                            stringResource(R.string.submission_saving_label),
+                            stringResource(R.string.submission_loading_save_label),
                             modifier = Modifier.padding(8.dp)
                         )
                     }
@@ -146,7 +146,7 @@ fun WorkSheetScreen(id: Int, workSheetId: String, onEvaluateSuccess: (id: Int?, 
                     } else {
                         Toast
                             .makeText(context,
-                                context.getString(R.string.press_again_to_exit), Toast.LENGTH_SHORT)
+                                context.getString(R.string.general_press_again_to_exit), Toast.LENGTH_SHORT)
                             .show()
                     }
                     lastBackPressTime.longValue = System.currentTimeMillis()

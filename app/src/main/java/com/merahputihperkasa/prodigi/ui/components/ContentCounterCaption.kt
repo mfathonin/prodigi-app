@@ -27,7 +27,7 @@ fun ContentsCounterCaption(
             .padding(bottom = 16.dp)
     ) {
         Text(
-            text = stringResource(R.string.list_counter_caption, dataCount),
+            text = stringResource(R.string.content_list_counter_caption, dataCount),
             style = MaterialTheme.typography.labelSmall.copy(fontStyle = FontStyle.Italic),
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )
