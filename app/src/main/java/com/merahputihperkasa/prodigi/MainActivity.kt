@@ -24,11 +24,11 @@ import com.merahputihperkasa.prodigi.ui.screens.History
 import com.merahputihperkasa.prodigi.ui.screens.HistoryScreen
 import com.merahputihperkasa.prodigi.ui.screens.QRScan
 import com.merahputihperkasa.prodigi.ui.screens.QRScanScreen
-import com.merahputihperkasa.prodigi.ui.screens.WorkSheet
+import com.merahputihperkasa.prodigi.ui.screens.WorkSheetSubmission
 import com.merahputihperkasa.prodigi.ui.screens.WorkSheetDetailScreen
-import com.merahputihperkasa.prodigi.ui.screens.WorkSheetEvaluation
-import com.merahputihperkasa.prodigi.ui.screens.WorkSheetEvaluationScreen
-import com.merahputihperkasa.prodigi.ui.screens.WorkSheetScreen
+import com.merahputihperkasa.prodigi.ui.screens.SubmissionResult
+import com.merahputihperkasa.prodigi.ui.screens.SubmissionResultScreen
+import com.merahputihperkasa.prodigi.ui.screens.WorkSheetSubmissionScreen
 import com.merahputihperkasa.prodigi.ui.screens.WorksheetDetail
 import com.merahputihperkasa.prodigi.utils.DataSyncWorker
 import java.util.concurrent.TimeUnit
@@ -81,41 +81,46 @@ class MainActivity : ComponentActivity() {
                         onNavigateStart = { submissionId, worksheetId, workSheetData ->
                             workSheet.value = workSheetData
 
-                            navController.navigate(WorkSheet(submissionId, worksheetId))
+                            navController.navigate(WorkSheetSubmission(submissionId, worksheetId))
                         }
                     )
                 }
-                composable<WorkSheet> { backStackEntry ->
-                    val id = backStackEntry.arguments?.getInt("id") ?: run {
+                composable<WorkSheetSubmission> { backStackEntry ->
+                    val id = backStackEntry.arguments?.getInt("submissionId") ?: run {
                         Log.e(
-                            "Prodigi.WSEvaluation",
-                            "[parse.arguments] Missing id (submissionId) argument"
+                            "Prodigi.WSSubmission",
+                            "[parse.arguments] Missing submissionId argument"
                         )
                         return@composable
                     }
-                    val worksheetId = backStackEntry.arguments?.getString("worksheetId") ?: run {
+                    val worksheetId = backStackEntry.arguments?.getString("worksheetUUID") ?: run {
                         Log.e(
-                            "Prodigi.WSEvaluation",
-                            "[parse.arguments] Missing worksheetId argument"
+                            "Prodigi.WSSubmission",
+                            "[parse.arguments] Missing worksheetUUID argument"
                         )
                         return@composable
                     }
 
-                    WorkSheetScreen(
+                    val workSheetData = getEntity(workSheet) {
+                        it.uuid == worksheetId
+                    }
+
+                    WorkSheetSubmissionScreen(
                         id,
                         worksheetId,
+                        workSheetData = workSheetData,
                         onEvaluateSuccess = { submissionId, submission ->
                             if (submissionId != null && submission != null) {
                                 submissionEntity.value = submission
                                     .toSubmissionEntity(submissionId, worksheetId)
 
                                 navController.navigate(
-                                    WorkSheetEvaluation(id, worksheetId)
+                                    SubmissionResult(id, worksheetId)
                                 )
                             }
                         })
                 }
-                composable<WorkSheetEvaluation> { backStackEntry ->
+                composable<SubmissionResult> { backStackEntry ->
                     val submissionId = backStackEntry.arguments?.getInt("submissionId") ?: run {
                         Log.e(
                             "Prodigi.WSEvaluation",
@@ -123,10 +128,10 @@ class MainActivity : ComponentActivity() {
                         )
                         return@composable
                     }
-                    val worksheetId = backStackEntry.arguments?.getString("worksheetId") ?: run {
+                    val worksheetId = backStackEntry.arguments?.getString("worksheetUUID") ?: run {
                         Log.e(
                             "Prodigi.WSEvaluation",
-                            "[parse.arguments] Missing worksheetId argument"
+                            "[parse.arguments] Missing worksheetUUID argument"
                         )
                         return@composable
                     }
@@ -139,7 +144,7 @@ class MainActivity : ComponentActivity() {
                         it.uuid == worksheetId
                     } ?: return@composable
 
-                    WorkSheetEvaluationScreen(
+                    SubmissionResultScreen(
                         submissionEntity = submissionEty,
                         workSheet = workSt,
                     )

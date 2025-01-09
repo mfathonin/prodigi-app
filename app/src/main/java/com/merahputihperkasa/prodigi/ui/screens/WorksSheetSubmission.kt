@@ -78,12 +78,22 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WorkSheetScreen(id: Int, workSheetId: String, onEvaluateSuccess: (id: Int?, submission: Submission?) -> Unit) {
+fun WorkSheetSubmissionScreen(
+    id: Int, workSheetId: String,
+    workSheetData: WorkSheet? = null,
+    onEvaluateSuccess: (id: Int?, submission: Submission?) -> Unit
+) {
     val context = LocalContext.current
     val repo = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
 
     val workSheetFlow = remember {
-        MutableStateFlow<LoadDataStatus<WorkSheet>>(LoadDataStatus.Loading())
+        MutableStateFlow(
+            if (workSheetData != null) {
+                LoadDataStatus.Success(workSheetData)
+            } else {
+                LoadDataStatus.Loading()
+            }
+        )
     }
     val submissionFlow = remember {
         MutableStateFlow<LoadDataStatus<Submission>>(LoadDataStatus.Loading())
@@ -155,7 +165,7 @@ fun WorkSheetScreen(id: Int, workSheetId: String, onEvaluateSuccess: (id: Int?, 
                 CompositionLocalProvider(
                     LocalOverscrollConfiguration provides null
                 ) {
-                    WorkSheetScreenContent(
+                    WorkSheetSubmissionContent(
                         workSheet,
                         submission,
                         modifier = Modifier
@@ -278,7 +288,7 @@ suspend fun submitAnswer(
 }
 
 @Composable
-fun WorkSheetScreenContent(
+fun WorkSheetSubmissionContent(
     workSheetState: State<LoadDataStatus<WorkSheet>>,
     submission: State<LoadDataStatus<Submission>>,
     modifier: Modifier = Modifier,
@@ -491,7 +501,10 @@ fun WorkSheetScreenContent(
                         contentColor = MaterialTheme.colorScheme.onSurface
                     )
                 ) {
-                    Box(Modifier.size(32.dp).padding(7.dp)) {
+                    Box(
+                        Modifier
+                            .size(32.dp)
+                            .padding(7.dp)) {
                         Icon(
                             painter = painterResource(R.drawable.save),
                             "Share Button",
@@ -537,7 +550,7 @@ fun WorkSheetScreenContent(
 
 @Preview(showBackground = true)
 @Composable
-fun WorkSheetScreenContentPreview() {
+fun WorkSheetSubmissionPreview() {
     val workSheet = MutableStateFlow(LoadDataStatus.Success(
         WorkSheet(
             id = "worksheet-id",
@@ -556,7 +569,7 @@ fun WorkSheetScreenContentPreview() {
             answers = List(10) { -1 }
         )
     )).collectAsState()
-    WorkSheetScreenContent(
+    WorkSheetSubmissionContent(
         workSheet,
         submission,
         onSave = { _, _ -> /* DO NOTHING */ }

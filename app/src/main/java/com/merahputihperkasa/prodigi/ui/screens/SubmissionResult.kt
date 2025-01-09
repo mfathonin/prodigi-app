@@ -59,7 +59,7 @@ import sv.lib.squircleshape.CornerSmoothing
 import sv.lib.squircleshape.SquircleShape
 
 @Composable
-fun WorkSheetEvaluationScreen(
+fun SubmissionResultScreen(
     modifier: Modifier = Modifier,
     submissionEntity: SubmissionEntity,
     workSheet: WorkSheet,
@@ -313,7 +313,7 @@ fun WorkSheetEvaluationScreen(
 
 @Preview(showBackground = true)
 @Composable
-fun WorkSheetEvaluationPreview(modifier: Modifier = Modifier) {
+fun SheetEvaluationPreview(modifier: Modifier = Modifier) {
 
     val workSheet =
         WorkSheet("id", "uuid", "bookId", "title", "content", 10, List(10) { 1 }, List(10) { 1 })
@@ -321,7 +321,7 @@ fun WorkSheetEvaluationPreview(modifier: Modifier = Modifier) {
         1, "name", "idNumber", "className", "schoolName", List(10) { 0 }, 7, 70, workSheet.uuid
     )
 
-    WorkSheetEvaluationScreen(
+    SubmissionResultScreen(
         submissionEntity = submissionEntity, workSheet = workSheet
     )
 }

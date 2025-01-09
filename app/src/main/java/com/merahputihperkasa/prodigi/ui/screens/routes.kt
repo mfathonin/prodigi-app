@@ -12,10 +12,10 @@ object History
 data class WorksheetDetail(val id: String)
 
 @Serializable
-data class WorkSheet(val id: Int, val worksheetId: String)
+data class WorkSheetSubmission(val submissionId: Int, val worksheetUUID: String)
 
 @Serializable
-data class WorkSheetEvaluation(val submissionId: Int, val worksheetId: String)
+data class SubmissionResult(val submissionId: Int, val worksheetUUID: String)
 
 @Serializable
 data class SubmissionHistory(val worksheetUUID: String)
