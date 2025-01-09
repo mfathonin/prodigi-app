@@ -3,11 +3,9 @@ package com.merahputihperkasa.prodigi.ui.screens
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollConfiguration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,14 +17,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,16 +44,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -72,11 +73,12 @@ import com.merahputihperkasa.prodigi.ui.components.OptionsCard
 import com.merahputihperkasa.prodigi.ui.components.SubmitConfimationDialog
 import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WorkSheetScreen(id: Int, workSheetId: String, onEvaluateSuccess: () -> Unit = {}) {
+fun WorkSheetScreen(id: Int, workSheetId: String, onEvaluateSuccess: (id: Int?, submission: Submission?) -> Unit) {
     val context = LocalContext.current
     val repo = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
 
@@ -157,6 +159,7 @@ fun WorkSheetScreen(id: Int, workSheetId: String, onEvaluateSuccess: () -> Unit 
                         workSheet,
                         submission,
                         modifier = Modifier
+                            .background(MaterialTheme.colorScheme.surface)
                             .padding(paddingValues),
                         onSave = { answers, callback ->
                             isLoadingOnSave.value = true
@@ -174,18 +177,22 @@ fun WorkSheetScreen(id: Int, workSheetId: String, onEvaluateSuccess: () -> Unit 
                         },
                         onSubmit = { answers ->
                             Log.i("Prodigi.Worksheet", "submit.answers: $answers")
+                            isLoadingOnSave.value = true
                             scope.launch {
                                 try {
-                                    submitAnswer(
+                                    val updatedSubmission = submitAnswer(
                                         id,
                                         workSheetFlow.value.data!!,
                                         submissionFlow.value.data!!,
                                         answers,
                                         repo
                                     )
-                                    onEvaluateSuccess.invoke()
+
+                                    onEvaluateSuccess.invoke(id, updatedSubmission)
                                 } catch (e: Exception) {
-                                    Log.e("Prodigi.Worksheet", "submit.error: $e")
+                                    Log.e("Prodigi.Worksheet", "[submit.error.$id]: $e")
+                                } finally {
+                                    isLoadingOnSave.value = false
                                 }
                             }
                         }
@@ -245,8 +252,10 @@ suspend fun submitAnswer(
     submission: Submission,
     answers: List<Int>,
     repo: ProdigiRepositoryImpl
-) {
+): Submission? {
     // cap the answer to worksheet.counts
+    var savedSubmission: Submission? = null
+
     val cleanAnswers = answers.take(workSheet.counts)
     repo.submitEvaluateAnswer(
         submissionId,
@@ -254,9 +263,18 @@ suspend fun submitAnswer(
         submission.copy(
             answers = cleanAnswers
         )
-    ).collect { res ->
-        Log.i("Prodigi.WorkSheet", "[evaluate.answer.$submissionId] $res")
+    ).collectLatest { res ->
+        Log.i("Prodigi.WorkSheet", "[evaluate.answer.$submissionId] ${res.data}")
+        res.data.let { subs ->
+            if (subs != null) {
+                savedSubmission = subs.copy(
+                    answers = cleanAnswers
+                )
+            }
+        }
     }
+
+    return savedSubmission
 }
 
 @Composable
@@ -267,6 +285,8 @@ fun WorkSheetScreenContent(
     onSave: (answers: List<Int>, callback: () -> Unit) -> Unit,
     onSubmit: (answers: List<Int>) -> Unit = {}
 ) {
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+
     ConstraintLayout(
         modifier
             .padding(horizontal = 20.dp)
@@ -314,23 +334,11 @@ fun WorkSheetScreenContent(
                 Toast.LENGTH_SHORT
             )
 
-            val saveButtonColor = if (isFinished) {
-                ButtonDefaults.buttonColors()
-            } else {
-                ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            val saveButtonLabel = if (isFinished) {
-                stringResource(R.string.worksheet_button_finish)
-            } else {
-                stringResource(R.string.worksheet_button_save)
-            }
-
             if (answers.value.size != count) {
                 answers.value = List(count!!) { -1 }
             }
+
+            val isAnswersNotSave = remember { mutableStateOf(false) }
 
             SubmitConfimationDialog(
                 isConfirmationOpen,
@@ -352,7 +360,12 @@ fun WorkSheetScreenContent(
                 Spacer(Modifier.height(30.dp))
                 Row(Modifier.fillMaxWidth(), Arrangement.Start) {
                     Column(
-                        Modifier.size(44.dp).background(MaterialTheme.colorScheme.surfaceTint.copy(alpha = .3f), MaterialTheme.shapes.large),
+                        Modifier
+                            .size(44.dp)
+                            .background(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.shapes.large
+                            ),
                         Arrangement.Center,
                         Alignment.CenterHorizontally,
                     ) {
@@ -401,20 +414,28 @@ fun WorkSheetScreenContent(
                             answers = answers,
                             option = optionsItems[index],
                             index = index,
-                        )
+                        ) {
+                            isAnswersNotSave.value = true
+                        }
 
                         // Border for non last element
                         if (index != optionsItems.size - 1) {
                             Spacer(Modifier.height(15.dp))
-                            Spacer(
+                            HorizontalDivider(
                                 Modifier
-                                    .fillMaxWidth(.95f)
+                                    .fillMaxWidth()
                                     .height(1.dp)
-                                    .alpha(.5f)
                                     .background(
-                                        MaterialTheme.colorScheme.onSurface.copy(alpha = .1f)
+                                        Brush.horizontalGradient(
+                                            listOf(
+                                                Color.Transparent,
+                                                MaterialTheme.colorScheme.onSurface.copy(alpha = .1f),
+                                                Color.Transparent
+                                            )
+                                        )
                                     )
-                                    .align(Alignment.CenterHorizontally)
+                                    .align(Alignment.CenterHorizontally),
+                                color = Color.Transparent,
                             )
                         } else {
                             Box(Modifier.padding(top = 10.dp, bottom = 30.dp))
@@ -423,11 +444,39 @@ fun WorkSheetScreenContent(
                 }
             }
 
-            Button(
-                onClick = {
-                    if (isFinished) {
+            Row(
+                modifier = Modifier
+                    .constrainAs(submitButton) {
+                        bottom.linkTo(parent.bottom)
+                        end.linkTo(parent.end)
+                        start.linkTo(parent.start)
+                    }
+                    .padding(bottom = 20.dp, top = 10.dp)
+                    .requiredWidth(screenWidth - 40.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(
+                    enabled = isFinished,
+                    onClick = {
                         isConfirmationOpen.value = true
-                    } else {
+                    },
+                    shape = MaterialTheme.shapes.large,
+                    modifier = Modifier
+                        .zIndex(2f)
+                        .weight(1f)
+                ) {
+                    Text(
+                        stringResource(
+                            R.string.worksheet_button_finish,
+                            answers.value.filter { it >= 0 }.size,
+                            count!!
+                        )
+                    )
+                }
+                Spacer(Modifier.width(10.dp))
+                IconButton(
+                    enabled = isAnswersNotSave.value,
+                    onClick = {
                         onSave.invoke(answers.value) {
                             onSaveToast.show()
                             Log.i(
@@ -435,19 +484,22 @@ fun WorkSheetScreenContent(
                                 "[onSave.callback] answers saved: ${answers.value}"
                             )
                         }
+                        isAnswersNotSave.value = false
+                    },
+                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceTint,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                ) {
+                    Box(Modifier.size(32.dp).padding(7.dp)) {
+                        Icon(
+                            painter = painterResource(R.drawable.save),
+                            "Share Button",
+                            Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
-                },
-                colors = saveButtonColor,
-                shape = MaterialTheme.shapes.large,
-                modifier = Modifier
-                    .constrainAs(submitButton) {
-                        bottom.linkTo(parent.bottom)
-                    }
-                    .zIndex(2f)
-                    .fillMaxWidth()
-                    .padding(bottom = 20.dp, top = 10.dp)
-            ) {
-                Text(saveButtonLabel)
+                }
             }
         }
 
@@ -493,9 +545,9 @@ fun WorkSheetScreenContentPreview() {
             bookId = "book-uuid",
             bookTitle = "Sample Book Title",
             contentTitle = "Sample Content Title",
-            counts = 10,
-            options = listOf(4,4,3,5,2,4,4,4,4,4),
-            points = List(10) { 5 }
+            counts = 4,
+            options = listOf(4,4,3,5),
+            points = List(4) { 5 }
         )
     )).collectAsState()
     val submission = MutableStateFlow(LoadDataStatus.Success(

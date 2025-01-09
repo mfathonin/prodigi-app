@@ -25,8 +25,7 @@
     <string name="profile_field_name">Nama</string>
     <string name="profile_field_school_name">Sekolah</string>
     <string name="worksheet_start_button_label">Mulai mengerjakan</string>
-    <string name="worksheet_button_finish">Selesai</string>
-    <string name="worksheet_button_save">Simpan</string>
+    <string name="worksheet_button_finish">Selesai (%1$s / %2$s)</string>
     <string name="worksheet_clear_answer">Hapus</string>
     <string name="press_again_to_exit">Tekan kembali untuk menutup lembar kerja</string>
     <string name="submission_saved">Lembar jawab tersimpan</string>
@@ -37,4 +36,8 @@
     <string name="worksheet_confirmation_desc">Apakah anda yakin ingin mengirim lembar jawab ini?</string>
     <string name="worksheet_personal_info_title">Data diri</string>
     <string name="worksheet_personal_info_desc">Lengkapi data diri untuk membuka lembar jawab</string>
+    <string name="submission_result_greetings">Selamat Telah Menyelesaikan Lembar Kerja!</string>
+    <string name="submission_result_correct_count_label">Jawaban Benar</string>
+    <string name="general_share_button">Bagikan</string>
+    <string name="general_finish_button">Selesai</string>
 </resources>

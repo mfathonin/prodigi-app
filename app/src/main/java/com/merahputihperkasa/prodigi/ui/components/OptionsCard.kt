@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +32,7 @@ val optionTFLabel = listOf("True", "False")
 val optionsLabel = listOf("A", "B", "C", "D", "E")
 
 @Composable
-fun OptionsCard(answers: MutableState<List<Int>>, option: Int, index: Int, modifier: Modifier = Modifier) {
+fun OptionsCard(answers: MutableState<List<Int>>, option: Int, index: Int, modifier: Modifier = Modifier, onChanged: () -> Unit = {}) {
     val selectedOption by remember { derivedStateOf { answers.value[index] } }
 
     Column(modifier) {
@@ -54,6 +53,7 @@ fun OptionsCard(answers: MutableState<List<Int>>, option: Int, index: Int, modif
                             removeAt(index)
                             add(index, -1)
                         }
+                        onChanged.invoke()
                     },
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.error,
@@ -96,6 +96,7 @@ fun OptionsCard(answers: MutableState<List<Int>>, option: Int, index: Int, modif
                             removeAt(index)
                             add(index, ops)
                         }
+                        onChanged.invoke()
                         Log.i("Prodigi.OptionsCard", "answers: $answers")
                     },
                     modifier = Modifier

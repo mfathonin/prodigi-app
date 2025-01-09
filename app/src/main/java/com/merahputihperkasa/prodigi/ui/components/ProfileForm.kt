@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -24,7 +25,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -34,6 +34,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.merahputihperkasa.prodigi.ProdigiApp
 import com.merahputihperkasa.prodigi.R
+import com.merahputihperkasa.prodigi.models.Profile
 import com.merahputihperkasa.prodigi.models.SubmissionEntity
 import com.merahputihperkasa.prodigi.models.WorkSheet
 import com.merahputihperkasa.prodigi.repository.ProdigiRepositoryImpl
@@ -50,10 +51,6 @@ fun ProfileForm(
     val context = LocalContext.current
     val repo = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
     val profile = submission?.toSubmission()?.profile
-    val workSheetId = workSheet.uuid
-    val count = workSheet.counts
-    val submissionId = submission?.id
-    val answers = submission?.answers
 
     var name by rememberSaveable { mutableStateOf(profile?.name ?: "") }
     var idNumber by rememberSaveable { mutableStateOf(profile?.idNumber ?: "") }
@@ -139,6 +136,17 @@ fun ProfileForm(
             keyboardOptions = keyboardOptions.copy(
                 imeAction = ImeAction.Done
             ),
+            keyboardActions = KeyboardActions {
+                if (isFormValid) {
+                    scope.launch {
+                        handleSubmitProfile(
+                            repo, workSheet, Profile(
+                                name, idNumber, className, schoolName
+                            ), submission, onSubmitted
+                        )
+                    }
+                }
+            }
         )
     }
 
@@ -147,15 +155,13 @@ fun ProfileForm(
         onClick = {
             if (isFormValid) {
                 scope.launch {
-                    // Save data to Room database
-                    val id = repo.upsertSubmission(
-                        id = submissionId, workSheetId,
-                        name, idNumber, className, schoolName,
-                        answers = answers ?: List(count) { -1 }
-                    )
-
-                    // Navigate to the next screen
-                    onSubmitted.invoke(submissionId ?: id)
+                    handleSubmitProfile(
+                        repo, workSheet, Profile(
+                            name, idNumber, className, schoolName
+                        ), submission
+                    ) {
+                        onSubmitted.invoke(it)
+                    }
                 }
             }
         },
@@ -167,4 +173,27 @@ fun ProfileForm(
         Text(stringResource(R.string.worksheet_start_button_label))
     }
     Spacer(modifier = Modifier.height(15.dp))
+}
+
+suspend fun handleSubmitProfile(
+    repo: ProdigiRepositoryImpl,
+    workSheet: WorkSheet,
+    profile: Profile,
+    submissionEntity: SubmissionEntity? = null,
+    onSubmitted: (id: Int) -> Unit = {}
+) {
+    val workSheetId = workSheet.uuid
+    val count = workSheet.counts
+    val submission = submissionEntity?.toSubmission()
+    val answers = submission?.answers
+
+    // Save data to Room database
+    val id = repo.upsertSubmission(
+        id = submissionEntity?.id, workSheetId,
+        profile.name, profile.idNumber, profile.className, profile.schoolName,
+        answers = answers ?: List(count) { -1 }
+    )
+
+    // Navigate to the next screen
+    onSubmitted.invoke(submissionEntity?.id ?: id)
 }

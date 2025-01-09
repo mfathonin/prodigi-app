@@ -1,7 +1,6 @@
 package com.merahputihperkasa.prodigi.ui.screens
 
 import android.util.Log
-import androidx.compose.animation.core.TweenSpec
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalOverscrollConfiguration
@@ -72,7 +71,7 @@ import sv.lib.squircleshape.SquircleShape
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WorkSheetDetailScreen(workSheetUUID: String, onNavigateStart: (id: Int, worksheetId: String) -> Unit) {
+fun WorkSheetDetailScreen(workSheetUUID: String, onNavigateStart: (id: Int, worksheetId: String, workSheet: WorkSheet) -> Unit) {
     ProdigiBookReaderTheme {
         val scrollState = rememberScrollState()
         val keyboardHeight = WindowInsets.ime.getBottom(LocalDensity.current)
@@ -147,7 +146,7 @@ fun WorkSheetDetailScreen(workSheetUUID: String, onNavigateStart: (id: Int, work
                                 workSheet,
                                 submission = submission,
                             ) { submissionId ->
-                                onNavigateStart.invoke(submissionId, workSheet.uuid)
+                                onNavigateStart.invoke(submissionId, workSheet.uuid, workSheet)
                             }
                         } else {
                             EmptyState(

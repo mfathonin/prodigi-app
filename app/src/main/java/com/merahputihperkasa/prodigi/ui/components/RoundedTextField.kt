@@ -1,27 +1,19 @@
 package com.merahputihperkasa.prodigi.ui.components
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -43,6 +35,7 @@ fun RoundedTextField(
     state: TextFieldState? = null,
     required: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
     onValueChange: (String) -> Unit,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
 ) {
@@ -69,11 +62,12 @@ fun RoundedTextField(
             modifier = modifier,
             singleLine = true,
             keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
             interactionSource = interactionSource
-        ) {
+        ) { innerTextField ->
             OutlinedTextFieldDefaults.DecorationBox(
                 value = value,
-                innerTextField = it,
+                innerTextField = innerTextField,
                 enabled = true,
                 isError = state?.error == true,
                 placeholder = {
@@ -88,8 +82,8 @@ fun RoundedTextField(
                 supportingText = { if (state !=null ) {
                     Text(
                         state.message,
-                        color = state.error.let {
-                            if (it) {MaterialTheme.colorScheme.error } else { MaterialTheme.colorScheme.surfaceTint.copy(alpha = .7f) }
+                        color = state.error.let { error ->
+                            if (error) {MaterialTheme.colorScheme.error } else { MaterialTheme.colorScheme.surfaceTint.copy(alpha = .7f) }
                         }
                     )
                 }},
@@ -137,23 +131,5 @@ fun RoundedTextFieldPreview(modifier: Modifier = Modifier) {
             value = "",
             onValueChange = {}
         )
-
-        Row(Modifier.fillMaxWidth().height(100.dp), Arrangement.SpaceBetween) {
-            RoundedTextField(
-                label = "Name",
-                value = "",
-                state = TextFieldState("This field is required"),
-                required = true,
-                modifier = Modifier.fillMaxWidth(),
-                onValueChange = {}
-            )
-            RoundedTextField(
-                label = "Name",
-                state = TextFieldState("This field is error", error = true),
-                value = "",
-                modifier = Modifier.fillMaxWidth(),
-                onValueChange = {}
-            )
-        }
     }
 }
