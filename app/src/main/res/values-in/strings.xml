@@ -33,7 +33,7 @@
     <string name="profile_field_school_name">Sekolah</string>
 
     <string name="submission_saved">Lembar jawab tersimpan</string>
-    <string name="submission_loading_save_label">Menyimpan lembar jawab</string>
+    <string name="submission_loading_save_label">Memproses lembar jawab</string>
     <string name="submission_result_greetings">Selamat Telah Menyelesaikan Lembar Kerja!</string>
     <string name="submission_result_correct_count_label">Jawaban Benar</string>
 

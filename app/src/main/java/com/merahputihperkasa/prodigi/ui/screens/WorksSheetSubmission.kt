@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -70,7 +71,7 @@ import com.merahputihperkasa.prodigi.models.WorkSheet
 import com.merahputihperkasa.prodigi.repository.LoadDataStatus
 import com.merahputihperkasa.prodigi.repository.ProdigiRepositoryImpl
 import com.merahputihperkasa.prodigi.ui.components.OptionsCard
-import com.merahputihperkasa.prodigi.ui.components.SubmitConfimationDialog
+import com.merahputihperkasa.prodigi.ui.components.SubmitConfirmationDialog
 import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -218,7 +219,7 @@ suspend fun loadWorkSheet(
     repo: ProdigiRepositoryImpl,
     stateFlow: MutableStateFlow<LoadDataStatus<WorkSheet>>
 ) {
-    repo.getWorkSheetConfig(workSheetId, false).collect { conf ->
+    repo.getWorkSheetConfig(workSheetId, false, byPassInitialLoading = true).collect { conf ->
         Log.i("Prodigi.WorkSheet", "[load.workSheet.$workSheetId] ${conf.data}")
         stateFlow.value = conf
     }
@@ -304,40 +305,21 @@ fun WorkSheetSubmissionContent(
     ) {
         val (header, optionsListSection, submitButton) = createRefs()
 
-        if (workSheetState.value is LoadDataStatus.Success && submission.value is LoadDataStatus.Success) {
+        if (workSheetState.value is LoadDataStatus.Success) {
             val workSheet by remember { derivedStateOf { workSheetState.value.data } }
             val count by remember { derivedStateOf { workSheet?.counts } }
             val options by remember { derivedStateOf { workSheet?.options } }
-            val answers = remember {
-                mutableStateOf(submission.value.data?.answers ?: List(0) { -1 })
-            }
+            val answers = remember { mutableStateOf(List(0) { -1 }) }
             val isFinished by remember {
                 derivedStateOf {
                     answers.value.filter { it != -1 }.size == count
                 }
             }
+            val isAnswersNotSave = remember { mutableStateOf(false) }
             val isConfirmationOpen = remember { mutableStateOf(false) }
 
             val context = LocalContext.current
-            val scope = rememberCoroutineScope()
-            val lifecycleOwner = LocalLifecycleOwner.current
-            DisposableEffect(key1 = lifecycleOwner) {
-                val observer = LifecycleEventObserver { _, event ->
-                    if (event == Lifecycle.Event.ON_PAUSE) {
-                        Log.i(
-                            "Prodigi.Worksheet",
-                            "[upsertSubmission.ON_PAUSE] isFinished: $isFinished, $answers"
-                        )
-                        scope.launch {
-                            onSave.invoke(answers.value) {}
-                        }
-                    }
-                }
-                lifecycleOwner.lifecycle.addObserver(observer)
-                onDispose {
-                    lifecycleOwner.lifecycle.removeObserver(observer)
-                }
-            }
+
             val onSaveToast = Toast.makeText(
                 context,
                 R.string.submission_saved,
@@ -348,16 +330,11 @@ fun WorkSheetSubmissionContent(
                 answers.value = List(count!!) { -1 }
             }
 
-            val isAnswersNotSave = remember { mutableStateOf(false) }
-
-            SubmitConfimationDialog(
-                isConfirmationOpen,
-                onDismiss = { isConfirmationOpen.value = false },
-                onConfirm = {
-                    onSubmit.invoke(answers.value)
-                    isConfirmationOpen.value = false
+            LaunchedEffect(key1 = submission.value) {
+                if (submission.value is LoadDataStatus.Success) {
+                    submission.value.data?.answers?.let { answers.value = it }
                 }
-            )
+            }
 
             Column(Modifier
                 .constrainAs(header) {
@@ -407,53 +384,64 @@ fun WorkSheetSubmissionContent(
                 }
             }
 
-            options?.let { optionsItems ->
-                Column(
-                    Modifier
-                        .constrainAs(optionsListSection) {
-                            top.linkTo(header.bottom)
-                            bottom.linkTo(submitButton.top)
-                            height = Dimension.fillToConstraints
-                        }
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .verticalScroll(rememberScrollState()),
-                ) {
-                    for (index in optionsItems.indices) {
-                        OptionsCard(
-                            answers = answers,
-                            option = optionsItems[index],
-                            index = index,
-                        ) {
-                            isAnswersNotSave.value = true
-                        }
+            // Options list with its own loading state
+            Column(
+                Modifier
+                    .constrainAs(optionsListSection) {
+                        top.linkTo(header.bottom)
+                        bottom.linkTo(submitButton.top)
+                        height = Dimension.fillToConstraints
+                    }
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                if (submission.value is LoadDataStatus.Loading) {
+                    Column(
+                        Modifier.padding(top = 30.dp).fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        LoadingState()
+                    }
+                } else if (submission.value is LoadDataStatus.Success) {
+                    options?.let { optionsItems ->
+                        for (index in optionsItems.indices) {
+                            OptionsCard(
+                                answers = answers,
+                                option = optionsItems[index],
+                                index = index,
+                            ) {
+                                isAnswersNotSave.value = true
+                            }
 
-                        // Border for non last element
-                        if (index != optionsItems.size - 1) {
-                            Spacer(Modifier.height(15.dp))
-                            HorizontalDivider(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(1.dp)
-                                    .background(
-                                        Brush.horizontalGradient(
-                                            listOf(
-                                                Color.Transparent,
-                                                MaterialTheme.colorScheme.onSurface.copy(alpha = .1f),
-                                                Color.Transparent
+                            // Border for non last element
+                            if (index != optionsItems.size - 1) {
+                                Spacer(Modifier.height(15.dp))
+                                HorizontalDivider(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .height(1.dp)
+                                        .background(
+                                            Brush.horizontalGradient(
+                                                listOf(
+                                                    Color.Transparent,
+                                                    MaterialTheme.colorScheme.onSurface.copy(alpha = .1f),
+                                                    Color.Transparent
+                                                )
                                             )
                                         )
-                                    )
-                                    .align(Alignment.CenterHorizontally),
-                                color = Color.Transparent,
-                            )
-                        } else {
-                            Box(Modifier.padding(top = 10.dp, bottom = 30.dp))
+                                        .align(Alignment.CenterHorizontally),
+                                    color = Color.Transparent,
+                                )
+                            } else {
+                                Box(Modifier.padding(top = 10.dp, bottom = 30.dp))
+                            }
                         }
                     }
                 }
             }
 
+            // Button sections
             Row(
                 modifier = Modifier
                     .constrainAs(submitButton) {
@@ -514,10 +502,39 @@ fun WorkSheetSubmissionContent(
                     }
                 }
             }
+
+            SubmitConfirmationDialog(
+                isConfirmationOpen,
+                onDismiss = { isConfirmationOpen.value = false },
+                onConfirm = {
+                    onSubmit.invoke(answers.value)
+                    isConfirmationOpen.value = false
+                }
+            )
+
+            val scope = rememberCoroutineScope()
+            val lifecycleOwner = LocalLifecycleOwner.current
+            DisposableEffect(key1 = lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_PAUSE) {
+                        Log.i(
+                            "Prodigi.Worksheet",
+                            "[upsertSubmission.ON_PAUSE] isFinished: $isFinished, $answers"
+                        )
+                        scope.launch {
+                            onSave.invoke(answers.value) {}
+                        }
+                    }
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
+                }
+            }
         }
 
         // Loading State
-        if (workSheetState.value is LoadDataStatus.Loading || submission.value is LoadDataStatus.Loading) {
+        if (workSheetState.value is LoadDataStatus.Loading) {
             LoadingState()
         }
 

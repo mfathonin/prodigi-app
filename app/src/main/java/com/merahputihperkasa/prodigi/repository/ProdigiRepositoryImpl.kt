@@ -126,8 +126,10 @@ class ProdigiRepositoryImpl(
         }
     }
 
-    override suspend fun getWorkSheetConfig(id: String, forceRefresh: Boolean): Flow<LoadDataStatus<WorkSheet>> = flow {
-        emit(LoadDataStatus.Loading())
+    override suspend fun getWorkSheetConfig(id: String, forceRefresh: Boolean, byPassInitialLoading: Boolean): Flow<LoadDataStatus<WorkSheet>> = flow {
+        if (!byPassInitialLoading) {
+            emit(LoadDataStatus.Loading())
+        }
 
         val currentTime = System.currentTimeMillis()
         val cachedWorkSheetConf = db.workSheetsDao.getWorkSheetByUUID(id, currentTime)

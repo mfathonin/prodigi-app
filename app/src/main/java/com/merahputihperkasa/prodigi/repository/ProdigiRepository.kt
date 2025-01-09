@@ -14,7 +14,7 @@ interface ProdigiRepository {
 
     suspend fun getBannerItems(forceRefresh: Boolean): Flow<LoadDataStatus<List<BannerItem>>>
 
-    suspend fun getWorkSheetConfig(id: String, forceRefresh: Boolean): Flow<LoadDataStatus<WorkSheet>>
+    suspend fun getWorkSheetConfig(id: String, forceRefresh: Boolean, byPassInitialLoading: Boolean = false): Flow<LoadDataStatus<WorkSheet>>
 
     suspend fun getSubmissionOnWorkSheetId(workSheetId: String): Flow<LoadDataStatus<SubmissionEntity?>>
     suspend fun getSubmissionById(id: Int): Flow<LoadDataStatus<Submission>>

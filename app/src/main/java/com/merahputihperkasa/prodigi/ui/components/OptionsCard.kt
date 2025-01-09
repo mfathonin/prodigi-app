@@ -33,7 +33,7 @@ val optionsLabel = listOf("A", "B", "C", "D", "E")
 
 @Composable
 fun OptionsCard(answers: MutableState<List<Int>>, option: Int, index: Int, modifier: Modifier = Modifier, onChanged: () -> Unit = {}) {
-    val selectedOption by remember { derivedStateOf { answers.value[index] } }
+    val selectedOption by remember { derivedStateOf { answers.value.getOrNull(index) ?: -1 } }
 
     Column(modifier) {
         Row(

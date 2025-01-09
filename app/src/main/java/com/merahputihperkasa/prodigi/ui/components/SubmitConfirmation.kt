@@ -10,7 +10,7 @@ import androidx.compose.ui.res.stringResource
 import com.merahputihperkasa.prodigi.R
 
 @Composable
-fun SubmitConfimationDialog(isOpen: State<Boolean>, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+fun SubmitConfirmationDialog(isOpen: State<Boolean>, onDismiss: () -> Unit, onConfirm: () -> Unit) {
     if (isOpen.value) {
         AlertDialog(
             onDismissRequest = {
