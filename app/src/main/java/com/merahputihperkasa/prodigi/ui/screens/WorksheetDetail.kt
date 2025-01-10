@@ -29,7 +29,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -41,7 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -71,7 +70,11 @@ import sv.lib.squircleshape.SquircleShape
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WorkSheetDetailScreen(workSheetUUID: String, onNavigateStart: (id: Int, worksheetId: String, workSheet: WorkSheet) -> Unit) {
+fun WorkSheetDetailScreen(
+    workSheetUUID: String,
+    onNavigateStart: (id: Int, worksheetId: String, workSheet: WorkSheet) -> Unit,
+    onNavigateToHistories: (worksheetData: WorkSheet) -> Unit
+) {
     ProdigiBookReaderTheme {
         val scrollState = rememberScrollState()
         val keyboardHeight = WindowInsets.ime.getBottom(LocalDensity.current)
@@ -145,9 +148,11 @@ fun WorkSheetDetailScreen(workSheetUUID: String, onNavigateStart: (id: Int, work
                             ProfileForm(
                                 workSheet,
                                 submission = submission,
-                            ) { submissionId ->
-                                onNavigateStart.invoke(submissionId, workSheet.uuid, workSheet)
-                            }
+                                onNavigateToHistories = onNavigateToHistories,
+                                onSubmitted = { submissionId ->
+                                    onNavigateStart.invoke(submissionId, workSheet.uuid, workSheet)
+                                },
+                            )
                         } else {
                             EmptyState(
                                 dataDescription = stringResource(R.string.worksheet_error_descriptor)
@@ -170,15 +175,22 @@ fun WorksheetDetailContent(
     Column(
         modifier,
     ) {
+        // Sections: App Bar
         Spacer(Modifier.height(20.dp))
         Row {
+            val icSize = 44.dp
             Column(
                 Modifier
-                    .size(44.dp)
-                    .clip(MaterialTheme.shapes.large)
-                    .border(
-                        BorderStroke(1.5.dp, MaterialTheme.colorScheme.surfaceTint),
-                        MaterialTheme.shapes.large),
+                    .size(icSize)
+                    .background(
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.shapes.large
+                    )
+                    .shadow(
+                        2.dp,
+                        MaterialTheme.shapes.large,
+                        spotColor = MaterialTheme.colorScheme.surfaceDim
+                    ),
                 Arrangement.Center,
                 Alignment.CenterHorizontally
             ){
@@ -186,7 +198,7 @@ fun WorksheetDetailContent(
                     painterResource(R.mipmap.ic_logo),
                     "Logo Prodigi",
                     Modifier.size(28.dp),
-                    MaterialTheme.colorScheme.surfaceTint
+                    MaterialTheme.colorScheme.onPrimary
                 )
             }
 
@@ -198,14 +210,14 @@ fun WorksheetDetailContent(
                     .padding(top = 10.dp, bottom = 20.dp),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.surfaceTint,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Light
             )
 
-            Box(Modifier.requiredSize(44.dp))
+            Box(Modifier.requiredSize(icSize))
         }
+        Spacer(Modifier.height(30.dp))
 
-        Spacer(Modifier.height(50.dp))
         if (workSheetConf.value is LoadDataStatus.Loading || submissionEntity.value is LoadDataStatus.Loading) {
             LoadingState()
         }
@@ -234,9 +246,9 @@ fun WorkSheetHeader(workSheet: WorkSheet) {
 
     Column(
         Modifier
-            .clip(borderContainer)
             .border(border, borderContainer)
-            .background(MaterialTheme.colorScheme.surfaceTint)
+            .shadow(2.dp, borderContainer, spotColor = MaterialTheme.colorScheme.surfaceDim)
+            .background(MaterialTheme.colorScheme.primary, borderContainer)
             .padding(vertical = 10.dp, horizontal = 15.dp)
     ) {
         Row {
@@ -265,8 +277,10 @@ fun WorkSheetHeader(workSheet: WorkSheet) {
             Box(
                 Modifier
                     .padding(5.dp)
-                    .clip(MaterialTheme.shapes.large)
-                    .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = .4f))
+                    .background(
+                        MaterialTheme.colorScheme.surface.copy(alpha = .35f),
+                        MaterialTheme.shapes.large
+                    )
                     .padding(10.dp)
             ) {
                 Icon(
@@ -279,14 +293,16 @@ fun WorkSheetHeader(workSheet: WorkSheet) {
         Row (
             Modifier
                 .padding(bottom = 5.dp)
-                .clip(MaterialTheme.shapes.large)
-                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
+                .background(
+                    MaterialTheme.colorScheme.surface.copy(alpha = .35f),
+                    MaterialTheme.shapes.large
+                )
                 .padding(vertical = 4.dp, horizontal = 12.dp)
                 .padding(end = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            val color = MaterialTheme.colorScheme.primary
+            val color = MaterialTheme.colorScheme.onPrimary
             Box(Modifier.size(15.dp)) {
                 Icon(
                     painter = painterResource(R.drawable.message_quote),

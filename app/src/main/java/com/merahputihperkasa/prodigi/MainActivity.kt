@@ -3,12 +3,14 @@ package com.merahputihperkasa.prodigi
 import android.Manifest
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -24,6 +26,8 @@ import com.merahputihperkasa.prodigi.ui.screens.History
 import com.merahputihperkasa.prodigi.ui.screens.HistoryScreen
 import com.merahputihperkasa.prodigi.ui.screens.QRScan
 import com.merahputihperkasa.prodigi.ui.screens.QRScanScreen
+import com.merahputihperkasa.prodigi.ui.screens.SubmissionHistory
+import com.merahputihperkasa.prodigi.ui.screens.SubmissionHistoryScreen
 import com.merahputihperkasa.prodigi.ui.screens.WorkSheetSubmission
 import com.merahputihperkasa.prodigi.ui.screens.WorkSheetDetailScreen
 import com.merahputihperkasa.prodigi.ui.screens.SubmissionResult
@@ -65,26 +69,37 @@ class MainActivity : ComponentActivity() {
                 composable<QRScan> {
                     QRScanScreen(navController)
                 }
+
                 composable<History> {
                     HistoryScreen(navController)
                 }
+
                 composable<WorksheetDetail>(
                     deepLinks = listOf(
                         navDeepLink<WorksheetDetail>(
                             basePath = "https://${ProdigiApp.appModule.internalSourceDomain}/quiz"
                         )
                     )
-                ) {
-                    val workSheetUUID = it.toRoute<WorksheetDetail>().id
+                ) { backStackEntry ->
+                    val workSheetUUID = backStackEntry.toRoute<WorksheetDetail>().id
+
                     WorkSheetDetailScreen(
                         workSheetUUID,
                         onNavigateStart = { submissionId, worksheetId, workSheetData ->
                             workSheet.value = workSheetData
 
                             navController.navigate(WorkSheetSubmission(submissionId, worksheetId))
+                        },
+                        onNavigateToHistories = { workSheetData ->
+                            workSheet.value = workSheetData
+
+                            navController.navigate(
+                                SubmissionHistory(workSheetUUID)
+                            )
                         }
                     )
                 }
+
                 composable<WorkSheetSubmission> { backStackEntry ->
                     val id = backStackEntry.arguments?.getInt("submissionId") ?: run {
                         Log.e(
@@ -120,6 +135,7 @@ class MainActivity : ComponentActivity() {
                             }
                         })
                 }
+
                 composable<SubmissionResult> { backStackEntry ->
                     val submissionId = backStackEntry.arguments?.getInt("submissionId") ?: run {
                         Log.e(
@@ -136,17 +152,55 @@ class MainActivity : ComponentActivity() {
                         return@composable
                     }
 
-                    val submissionEty = getEntity(submissionEntity) {
+                    val submissionData = getEntity(submissionEntity) {
                         it.id == submissionId && it.worksheetUuid == worksheetId
-                    } ?: return@composable
+                    } ?:  run {
+                        Log.e(
+                            "Prodigi.WSEvaluation",
+                            "[getEntity.submission.$submissionId] Could not find submission entity, ${submissionEntity.value}"
+                        )
+                        generalExceptionRollBack(navController)
+                        return@composable
+                    }
 
-                    val workSt = getEntity(workSheet) {
+                    val workSheetData = getEntity(workSheet) {
                         it.uuid == worksheetId
-                    } ?: return@composable
+                    } ?:  run {
+                        Log.e(
+                            "Prodigi.WSEvaluation",
+                            "[getEntity.worksheet.$worksheetId] Could not find worksheet entity. ${workSheet.value}"
+                        )
+                        generalExceptionRollBack(navController)
+                        return@composable
+                    }
 
                     SubmissionResultScreen(
-                        submissionEntity = submissionEty,
-                        workSheet = workSt,
+                        submissionEntity = submissionData,
+                        workSheet = workSheetData,
+                    )
+                }
+
+                composable<SubmissionHistory> { backStackEntry ->
+                    val worksheetUUID = backStackEntry.arguments?.getString("worksheetUUID") ?: run {
+                        Log.e(
+                            "Prodigi.SubmissionHistory",
+                            "[parse.arguments] Missing worksheetUUID argument"
+                        )
+                        return@composable
+                    }
+                    val workSheetData = getEntity(workSheet) {
+                        it.uuid == worksheetUUID
+                    }
+
+                    SubmissionHistoryScreen(
+                        worksheetUUID,
+                        workSheet = workSheetData,
+                        onNavigateToResult = { submissionId, submissionEntityData, worksheetData ->
+                            submissionEntity.value = submissionEntityData
+                            workSheet.value = worksheetData
+
+                            navController.navigate(SubmissionResult(submissionId, worksheetUUID))
+                        }
                     )
                 }
             }
@@ -174,5 +228,14 @@ class MainActivity : ComponentActivity() {
         predicate: (T) -> Boolean,
     ): T? {
         return entity.value.takeIf { it != null && predicate(it) }
+    }
+
+    private fun generalExceptionRollBack(navController: NavController) {
+        navController.popBackStack()
+        Toast.makeText(
+            this@MainActivity.applicationContext,
+            "Something went wrong",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 }

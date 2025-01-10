@@ -17,6 +17,8 @@ interface ProdigiRepository {
     suspend fun getWorkSheetConfig(id: String, forceRefresh: Boolean, byPassInitialLoading: Boolean = false): Flow<LoadDataStatus<WorkSheet>>
 
     suspend fun getSubmissionOnWorkSheetId(workSheetId: String): Flow<LoadDataStatus<SubmissionEntity?>>
+    suspend fun getSubmissionsHistories(workSheetId: String): Flow<LoadDataStatus<List<SubmissionEntity>>>
+
     suspend fun getSubmissionById(id: Int): Flow<LoadDataStatus<Submission>>
     suspend fun upsertSubmission(id: Int? = 0, workSheetId: String, name: String, idNumber: String, className: String, schoolName: String, answers: List<Int>): Int
     suspend fun submitEvaluateAnswer(submissionId: Int, workSheetId: String, submission: Submission): Flow<LoadDataStatus<Submission>>

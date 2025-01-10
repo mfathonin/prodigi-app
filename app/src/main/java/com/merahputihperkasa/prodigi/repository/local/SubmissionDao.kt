@@ -10,8 +10,11 @@ interface SubmissionDao {
     @Upsert
     suspend fun upsertSubmission(submission: SubmissionEntity): Long
 
-    @Query("SELECT * FROM submissions WHERE worksheet_uuid = :worksheetUuid AND total_points is NULL LIMIT 1")
+    @Query("SELECT * FROM submissions WHERE worksheet_uuid = :worksheetUuid AND total_points is NULL ORDER BY id DESC LIMIT 1")
     suspend fun getSubmissionsByWorksheetUuid(worksheetUuid: String): SubmissionEntity?
+
+    @Query("SELECT * FROM submissions WHERE worksheet_uuid = :worksheetUuid AND total_points is NOT NULL ORDER BY id DESC")
+    suspend fun getSubmissionHistories(worksheetUuid: String): List<SubmissionEntity>
 
     @Query("SELECT * FROM submissions WHERE id = :id LIMIT 1")
     suspend fun getSubmissionById(id: Int): SubmissionEntity?

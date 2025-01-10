@@ -24,6 +24,7 @@
     <string name="worksheet_submit_button_label">Kirim</string>
     <string name="worksheet_confirmation_title">Mengirim Lembar Jawab</string>
     <string name="worksheet_confirmation_desc">Apakah anda yakin ingin mengirim lembar jawab ini?</string>
+    <string name="worksheet_history_button_label">Riwayat</string>
 
     <string name="profile_form_title">Data diri</string>
     <string name="profile_form_desc">Lengkapi data diri untuk membuka lembar jawab</string>
@@ -36,6 +37,8 @@
     <string name="submission_loading_save_label">Memproses lembar jawab</string>
     <string name="submission_result_greetings">Selamat Telah Menyelesaikan Lembar Kerja!</string>
     <string name="submission_result_correct_count_label">Jawaban Benar</string>
+    <string name="submission_card_desc">Kelas %1$s | No. %2$s</string>
+    <string name="submission_error_descriptor">riwayat lembar kerja.</string>
 
     <string name="general_retry_button">Coba lagi</string>
     <string name="general_history_title">Riwayat</string>
@@ -46,4 +49,5 @@
     <string name="general_cancel_button_label">Batal</string>
     <string name="general_share_button">Bagikan</string>
     <string name="general_finish_button">Selesai</string>
+    <string name="submission_hitory_title">Riwayat Lembar Kerja</string>
 </resources>

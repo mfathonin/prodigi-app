@@ -96,7 +96,7 @@ fun SubmissionResultScreen(
             Icon(
                 painter = painterResource(R.mipmap.ic_logo),
                 contentDescription = "Logo Prodigi",
-                tint = MaterialTheme.colorScheme.onError.copy(alpha = .2f),
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = .25f),
                 modifier = Modifier
                     .absoluteOffset(x = screenWidth * .13f, y = 70.dp)
                     .scale(2.4f)

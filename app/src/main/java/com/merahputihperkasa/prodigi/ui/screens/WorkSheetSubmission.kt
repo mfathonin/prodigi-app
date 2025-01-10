@@ -131,19 +131,26 @@ fun WorkSheetSubmissionScreen(
                             .zIndex(10f)
                             .blur(30.dp)
                             .background(
-                                MaterialTheme.colorScheme.surfaceVariant
-                                    .copy(alpha = .6f)
+                                brush = Brush.verticalGradient(
+                                    listOf(
+                                        MaterialTheme.colorScheme.inverseSurface.copy(alpha = .85f),
+                                        MaterialTheme.colorScheme.inverseSurface.copy(alpha = .65f),
+                                        MaterialTheme.colorScheme.inverseSurface.copy(alpha = .9f)
+                                    )
+                                )
                             )
-                            .padding(paddingValues)
                             .clickable(enabled = false) {}
                             .fillMaxSize(),
                         Arrangement.Center,
                         Alignment.CenterHorizontally
                     ) {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.inverseOnSurface
+                        )
                         Text(
                             stringResource(R.string.submission_loading_save_label),
-                            modifier = Modifier.padding(8.dp)
+                            modifier = Modifier.padding(8.dp).padding(top = 10.dp),
+                            color = MaterialTheme.colorScheme.inverseOnSurface
                         )
                     }
                 }
@@ -175,15 +182,21 @@ fun WorkSheetSubmissionScreen(
                         onSave = { answers, callback ->
                             isLoadingOnSave.value = true
                             scope.launch {
-                                saveAnswers(
-                                    submissionId = id,
-                                    workSheet.value.data!!,
-                                    submission.value.data!!,
-                                    answers,
-                                    repo
-                                )
-                                isLoadingOnSave.value = false
-                                callback.invoke()
+                                try {
+                                    saveAnswers(
+                                        submissionId = id,
+                                        workSheet.value.data!!,
+                                        submission.value.data!!,
+                                        answers,
+                                        repo
+                                    )
+
+                                    callback.invoke()
+                                } catch (e: Exception) {
+                                    Log.e("Prodigi.Worksheet", "[save.error.$id]: $e")
+                                } finally {
+                                    isLoadingOnSave.value = false
+                                }
                             }
                         },
                         onSubmit = { answers ->

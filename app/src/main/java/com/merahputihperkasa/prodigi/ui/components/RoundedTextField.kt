@@ -15,11 +15,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 
 data class TextFieldState(
     val message: String,
@@ -37,8 +42,8 @@ fun RoundedTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     onValueChange: (String) -> Unit,
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
 ) {
+    val interactionSource by remember { mutableStateOf(MutableInteractionSource()) }
     Column {
         if (label != null) {
             Row {
@@ -61,9 +66,14 @@ fun RoundedTextField(
             onValueChange = onValueChange,
             modifier = modifier,
             singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.W400
+            ),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
-            interactionSource = interactionSource
+            interactionSource = interactionSource,
         ) { innerTextField ->
             OutlinedTextFieldDefaults.DecorationBox(
                 value = value,
@@ -90,7 +100,7 @@ fun RoundedTextField(
                 singleLine = true,
                 contentPadding = PaddingValues(vertical = 10.dp, horizontal = 16.dp),
                 visualTransformation = VisualTransformation.None,
-                interactionSource = interactionSource
+                interactionSource = interactionSource,
             ) {
                 OutlinedTextFieldDefaults.Container(
                     shape = MaterialTheme.shapes.medium,
@@ -112,24 +122,26 @@ fun RoundedTextField(
 @Preview(showBackground = true)
 @Composable
 fun RoundedTextFieldPreview(modifier: Modifier = Modifier) {
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(20.dp),
-        Arrangement.spacedBy(10.dp)
-    ) {
-        RoundedTextField(
-            label = "Name",
-            value = "",
-            state = TextFieldState("This field is required"),
-            required = true,
-            onValueChange = {}
-        )
-        RoundedTextField(
-            label = "Name",
-            state = TextFieldState("This field is error", error = true),
-            value = "",
-            onValueChange = {}
-        )
+    ProdigiBookReaderTheme(darkTheme = false) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            Arrangement.spacedBy(10.dp)
+        ) {
+            RoundedTextField(
+                label = "Name",
+                value = "",
+                state = TextFieldState("This field is required"),
+                required = true,
+                onValueChange = {}
+            )
+            RoundedTextField(
+                label = "Name",
+                state = TextFieldState("This field is error", error = true),
+                value = "",
+                onValueChange = {}
+            )
+        }
     }
 }

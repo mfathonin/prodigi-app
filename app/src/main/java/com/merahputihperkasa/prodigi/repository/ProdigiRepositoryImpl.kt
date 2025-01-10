@@ -218,6 +218,20 @@ class ProdigiRepositoryImpl(
         }
     }
 
+    override suspend fun getSubmissionsHistories(workSheetId: String): Flow<LoadDataStatus<List<SubmissionEntity>>> = flow {
+        emit(LoadDataStatus.Loading())
+
+        try {
+            val submissions = db.submissionDao.getSubmissionHistories(workSheetId)
+            emit(LoadDataStatus.Success(submissions))
+            Log.i("Prodigi.Repository", "[getSubmissionsByWorksheetUuid.$workSheetId] $submissions")
+        } catch (e: Exception) {
+            Log.e("Prodigi.Repository", "[getSubmissionsByWorksheetUuid.$workSheetId] Error getting submission: ${e.message}")
+            emit(LoadDataStatus.Error("Error load submission"))
+        }
+
+    }
+
     override suspend fun submitEvaluateAnswer(submissionId: Int, workSheetId: String, submission: Submission): Flow<LoadDataStatus<Submission>> = flow {
         emit(LoadDataStatus.Loading())
         val result: SubmissionResult = api.submitWorksheet(workSheetId, submission.toSubmissionBody())

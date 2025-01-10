@@ -7,16 +7,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,16 +34,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.merahputihperkasa.prodigi.ProdigiApp
 import com.merahputihperkasa.prodigi.R
 import com.merahputihperkasa.prodigi.models.Profile
 import com.merahputihperkasa.prodigi.models.SubmissionEntity
 import com.merahputihperkasa.prodigi.models.WorkSheet
+import com.merahputihperkasa.prodigi.repository.LoadDataStatus
 import com.merahputihperkasa.prodigi.repository.ProdigiRepositoryImpl
+import com.merahputihperkasa.prodigi.ui.screens.loadSubmissionHistory
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import sv.lib.squircleshape.CornerSmoothing
 import sv.lib.squircleshape.SquircleShape
@@ -46,6 +60,7 @@ import sv.lib.squircleshape.SquircleShape
 fun ProfileForm(
     workSheet: WorkSheet,
     submission: SubmissionEntity? = null,
+    onNavigateToHistories: (workSheet: WorkSheet) -> Unit = {},
     onSubmitted: (id: Int) -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -62,6 +77,26 @@ fun ProfileForm(
         }
     }
     val scope = rememberCoroutineScope()
+
+    val submissionHistoriesFlow = remember {
+        MutableStateFlow<LoadDataStatus<List<SubmissionEntity>>>(LoadDataStatus.Loading())
+    }
+    val submissionCount: Int = submissionHistoriesFlow.collectAsState().value.data?.size ?: 0
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(key1 = lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                scope.launch {
+                    loadSubmissionHistory(workSheet.uuid, submissionHistoriesFlow, repo)
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     val keyboardOptions = KeyboardOptions(
         imeAction = ImeAction.Next,
@@ -93,10 +128,12 @@ fun ProfileForm(
                 stringResource(R.string.profile_form_title),
                 style = MaterialTheme.typography.titleMedium
             )
+            Spacer(Modifier.height(4.dp))
             Text(
                 stringResource(R.string.profile_form_desc),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = .3f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = .4f),
+                fontWeight = FontWeight.Light,
             )
         }
         Spacer(Modifier.height(12.dp))
@@ -151,26 +188,46 @@ fun ProfileForm(
     }
 
     Spacer(modifier = Modifier.height(20.dp))
-    Button(
-        onClick = {
-            if (isFormValid) {
-                scope.launch {
-                    handleSubmitProfile(
-                        repo, workSheet, Profile(
-                            name, idNumber, className, schoolName
-                        ), submission
-                    ) {
-                        onSubmitted.invoke(it)
+    Row(
+        modifier = Modifier.height(36.dp).fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Button(
+            onClick = {
+                onNavigateToHistories.invoke(workSheet)
+            },
+            enabled = submissionCount > 0,
+            shape = MaterialTheme.shapes.large,
+            colors = ButtonDefaults.outlinedButtonColors(),
+            contentPadding = PaddingValues(horizontal = 12.dp),
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.file_clock),
+                "History Button",
+                modifier = Modifier.size(20.dp).padding(end = 5.dp)
+            )
+            Text(stringResource(R.string.worksheet_history_button_label))
+        }
+        Button(
+            onClick = {
+                if (isFormValid) {
+                    scope.launch {
+                        handleSubmitProfile(
+                            repo, workSheet, Profile(
+                                name, idNumber, className, schoolName
+                            ), submission
+                        ) {
+                            onSubmitted.invoke(it)
+                        }
                     }
                 }
-            }
-        },
-        enabled = isFormValid,
-        shape = MaterialTheme.shapes.large,
-        contentPadding = PaddingValues(horizontal = 20.dp),
-        modifier = Modifier.height(36.dp)
-    ) {
-        Text(stringResource(R.string.worksheet_start_button_label))
+            },
+            enabled = isFormValid,
+            shape = MaterialTheme.shapes.large,
+            contentPadding = PaddingValues(horizontal = 20.dp),
+        ) {
+            Text(stringResource(R.string.worksheet_start_button_label))
+        }
     }
     Spacer(modifier = Modifier.height(15.dp))
 }
