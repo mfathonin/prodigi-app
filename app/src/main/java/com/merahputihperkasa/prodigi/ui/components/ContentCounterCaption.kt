@@ -3,6 +3,7 @@ package com.merahputihperkasa.prodigi.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,6 +23,7 @@ fun ContentsCounterCaption(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .height(30.dp)
             .background(topAppBarContainerColor)
             .padding(horizontal = 20.dp)
             .padding(bottom = 16.dp)

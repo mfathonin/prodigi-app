@@ -155,7 +155,7 @@ fun WorkSheetDetailScreen(
                             )
                         } else {
                             EmptyState(
-                                dataDescription = stringResource(R.string.worksheet_error_descriptor)
+                                emptyDataDescription = stringResource(R.string.worksheet_error_descriptor)
                             )
                         }
                     }

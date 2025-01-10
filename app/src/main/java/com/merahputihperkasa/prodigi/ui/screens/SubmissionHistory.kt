@@ -143,7 +143,7 @@ fun SubmissionHistoryScreen(
                         }
 
                         else ->
-                            LoadingState()
+                            LoadingState(color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
