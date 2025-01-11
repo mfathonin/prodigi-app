@@ -129,6 +129,7 @@ class MainActivity : ComponentActivity() {
                                 submissionEntity.value = submission
                                     .toSubmissionEntity(submissionId, worksheetId)
 
+                                navController.popBackStack<WorksheetDetail>(false)
                                 navController.navigate(
                                     SubmissionResult(id, worksheetId)
                                 )

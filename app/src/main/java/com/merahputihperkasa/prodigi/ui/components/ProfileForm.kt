@@ -181,6 +181,12 @@ fun ProfileForm(
                                 name, idNumber, className, schoolName
                             ), submission, onSubmitted
                         )
+
+                        // Reset form state
+                        name = ""
+                        idNumber = ""
+                        className = ""
+                        schoolName = ""
                     }
                 }
             }
@@ -219,6 +225,12 @@ fun ProfileForm(
                         ) {
                             onSubmitted.invoke(it)
                         }
+
+                        // Reset form state
+                        name = ""
+                        idNumber = ""
+                        className = ""
+                        schoolName = ""
                     }
                 }
             },
