@@ -32,6 +32,8 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -60,15 +62,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.merahputihperkasa.prodigi.MainActivity
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.merahputihperkasa.prodigi.ProdigiApp
 import com.merahputihperkasa.prodigi.R
 import com.merahputihperkasa.prodigi.models.SubmissionEntity
 import com.merahputihperkasa.prodigi.models.WorkSheet
+import com.merahputihperkasa.prodigi.repository.LoadDataStatus
+import com.merahputihperkasa.prodigi.repository.ProdigiRepositoryImpl
 import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 import com.merahputihperkasa.prodigi.utils.saveToDisk
 import com.merahputihperkasa.prodigi.utils.shareBitmap
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import sv.lib.squircleshape.CornerSmoothing
 import sv.lib.squircleshape.SquircleShape
@@ -76,9 +85,10 @@ import sv.lib.squircleshape.SquircleShape
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun SubmissionResultScreen(
-    modifier: Modifier = Modifier,
-    submissionEntity: SubmissionEntity,
-    workSheet: WorkSheet,
+    submissionId: Int,
+    workSheetUUID: String,
+    submissionEntity: SubmissionEntity?,
+    workSheet: WorkSheet?,
 ) {
     ProdigiBookReaderTheme {
         val context = LocalContext.current
@@ -118,7 +128,6 @@ fun SubmissionResultScreen(
             }
         }
 
-
         Scaffold(
             Modifier
                 .drawWithCache {
@@ -133,6 +142,43 @@ fun SubmissionResultScreen(
         ) { paddingValues ->
             val screenHeight = LocalConfiguration.current.screenHeightDp.dp
             val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+
+            val submissionEntityFlow = remember { MutableStateFlow(
+                if (submissionEntity != null)
+                    LoadDataStatus.Success(submissionEntity.toSubmission())
+                else LoadDataStatus.Loading()
+            )}
+            val worksheetFlow = remember { MutableStateFlow(
+                if (workSheet != null) LoadDataStatus.Success(workSheet)
+                else LoadDataStatus.Loading()
+            )}
+            val submissionState = submissionEntityFlow.collectAsState().value
+            val worksheetState = worksheetFlow.collectAsState().value
+            val submissionData = submissionState.data
+            val worksheetData = worksheetState.data
+
+            if (submissionState is LoadDataStatus.Loading || worksheetState is LoadDataStatus.Loading) {
+                val repo = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
+                val lifecycleOwner = LocalLifecycleOwner.current
+                DisposableEffect(lifecycleOwner) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        if (event == Lifecycle.Event.ON_RESUME) {
+                            scope.launch {
+                                loadSubmission(submissionId, repo, submissionEntityFlow)
+                                loadWorkSheet(workSheetUUID, repo, worksheetFlow)
+                            }
+                        }
+                    }
+                    lifecycleOwner.lifecycle.addObserver(observer)
+                    onDispose {
+                        lifecycleOwner.lifecycle.removeObserver(observer)
+                    }
+                }
+
+                LoadingState()
+                return@Scaffold
+            }
+
 
             // Decoration
             Box(
@@ -166,7 +212,7 @@ fun SubmissionResultScreen(
 
             // Main
             ConstraintLayout(
-                modifier
+                Modifier
                     .padding(paddingValues)
                     .zIndex(20f)
                     .padding(horizontal = min(screenWidth * .1f, 20.dp))
@@ -246,10 +292,10 @@ fun SubmissionResultScreen(
                             .padding(top = 20.dp), horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            "${workSheet.bookTitle}", style = MaterialTheme.typography.bodySmall
+                            "${worksheetData?.bookTitle}", style = MaterialTheme.typography.bodySmall
                         )
                         Text(
-                            "${workSheet.contentTitle}",
+                            "${worksheetData?.contentTitle}",
                             style = MaterialTheme.typography.headlineMedium
                         )
 
@@ -270,7 +316,7 @@ fun SubmissionResultScreen(
                             style = MaterialTheme.typography.bodyLarge
                         )
                         Text(
-                            "${submissionEntity.totalPoints}",
+                            "${submissionData?.totalPoints}",
                             color = Color.White,
                             style = MaterialTheme.typography.displayMedium
                         )
@@ -291,7 +337,7 @@ fun SubmissionResultScreen(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            "${submissionEntity.correctAnswers} / ${workSheet.counts}",
+                            "${submissionData?.correctAnswers} / ${worksheetData?.counts}",
                             color = Color.White
                         )
                         Text(
@@ -303,11 +349,12 @@ fun SubmissionResultScreen(
                     }
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        val profile = submissionData?.profile
                         Text(
-                            submissionEntity.name, style = MaterialTheme.typography.headlineSmall
+                            "${profile?.name}", style = MaterialTheme.typography.headlineSmall
                         )
                         Text(
-                            "${submissionEntity.schoolName} | ${submissionEntity.className} |  ${submissionEntity.idNumber}",
+                            "${profile?.schoolName} | ${profile?.className} |  ${profile?.idNumber}",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -386,6 +433,7 @@ fun SheetEvaluationPreview(modifier: Modifier = Modifier) {
     )
 
     SubmissionResultScreen(
+        0, "id",
         submissionEntity = submissionEntity, workSheet = workSheet
     )
 }

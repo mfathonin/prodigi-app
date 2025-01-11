@@ -152,31 +152,18 @@ class MainActivity : ComponentActivity() {
                         return@composable
                     }
 
-                    val submissionData = getEntity(submissionEntity) {
-                        it.id == submissionId && it.worksheetUuid == worksheetId
-                    } ?:  run {
-                        Log.e(
-                            "Prodigi.WSEvaluation",
-                            "[getEntity.submission.$submissionId] Could not find submission entity, ${submissionEntity.value}"
-                        )
-                        generalExceptionRollBack(navController)
-                        return@composable
-                    }
-
                     val workSheetData = getEntity(workSheet) {
                         it.uuid == worksheetId
-                    } ?:  run {
-                        Log.e(
-                            "Prodigi.WSEvaluation",
-                            "[getEntity.worksheet.$worksheetId] Could not find worksheet entity. ${workSheet.value}"
-                        )
-                        generalExceptionRollBack(navController)
-                        return@composable
+                    }
+
+
+                    val submissionData = getEntity(submissionEntity) {
+                        it.id == submissionId && it.worksheetUuid == worksheetId
                     }
 
                     SubmissionResultScreen(
-                        submissionEntity = submissionData,
-                        workSheet = workSheetData,
+                        submissionId, worksheetId,
+                        submissionData, workSheetData,
                     )
                 }
 
