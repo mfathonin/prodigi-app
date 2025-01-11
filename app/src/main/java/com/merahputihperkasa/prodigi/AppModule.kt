@@ -24,7 +24,7 @@ interface AppModule {
 class AppReleaseModule(
     private val appContext: Context
 ): AppModule {
-    override val apiVersion = 1
+    override val apiVersion = 2
     override val internalSourceDomain = "mpp-hub.netlify.app"
     override val internalSourceModules = "/links"
     override val internalSourceTag: String
