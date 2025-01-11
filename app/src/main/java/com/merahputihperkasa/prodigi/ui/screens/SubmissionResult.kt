@@ -1,5 +1,7 @@
 package com.merahputihperkasa.prodigi.ui.screens
 
+import android.Manifest
+import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,20 +27,28 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -50,14 +60,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.merahputihperkasa.prodigi.MainActivity
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.merahputihperkasa.prodigi.R
 import com.merahputihperkasa.prodigi.models.SubmissionEntity
 import com.merahputihperkasa.prodigi.models.WorkSheet
 import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
+import com.merahputihperkasa.prodigi.utils.saveToDisk
+import com.merahputihperkasa.prodigi.utils.shareBitmap
+import kotlinx.coroutines.launch
 import sv.lib.squircleshape.CornerSmoothing
 import sv.lib.squircleshape.SquircleShape
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun SubmissionResultScreen(
     modifier: Modifier = Modifier,
@@ -65,12 +81,58 @@ fun SubmissionResultScreen(
     workSheet: WorkSheet,
 ) {
     ProdigiBookReaderTheme {
+        val context = LocalContext.current
+        val scope = rememberCoroutineScope()
+        val snackBarHostState = remember { SnackbarHostState() }
+        val graphicsLayer = rememberGraphicsLayer()
+
+        val writeStorageAccessState = rememberMultiplePermissionsState(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // No permissions are needed on Android 10+ to add files in the shared storage
+                emptyList()
+            } else {
+                listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+        )
+        fun shareBitmapFromComposable() {
+            if (writeStorageAccessState.allPermissionsGranted) {
+                scope.launch {
+                    val bitmap = graphicsLayer.toImageBitmap()
+                    val uri = bitmap.asAndroidBitmap().saveToDisk(context)
+                    shareBitmap(context, uri)
+                }
+            } else if (writeStorageAccessState.shouldShowRationale) {
+                scope.launch {
+
+                    val result = snackBarHostState.showSnackbar(
+                        message = "The storage permission is needed to save the image",
+                        actionLabel = "Grant Access"
+                    )
+
+                    if (result == SnackbarResult.ActionPerformed) {
+                        writeStorageAccessState.launchMultiplePermissionRequest()
+                    }
+                }
+            } else {
+                writeStorageAccessState.launchMultiplePermissionRequest()
+            }
+        }
+
+
         Scaffold(
-            Modifier.background(MaterialTheme.colorScheme.surface),
+            Modifier
+                .drawWithCache {
+                    onDrawWithContent {
+                        graphicsLayer.record {
+                            this@onDrawWithContent.drawContent()
+                        }
+                        drawLayer(graphicsLayer)
+                    }
+                }
+                .background(MaterialTheme.colorScheme.surface),
         ) { paddingValues ->
             val screenHeight = LocalConfiguration.current.screenHeightDp.dp
             val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-            val context = LocalContext.current
 
             // Decoration
             Box(
@@ -256,7 +318,9 @@ fun SubmissionResultScreen(
                         horizontalArrangement = Arrangement.SpaceAround
                     ) {
                         Button(
-                            onClick = {},
+                            onClick = {
+                                shareBitmapFromComposable()
+                            },
                             modifier = Modifier.height(32.dp),
                             contentPadding = PaddingValues(horizontal = 15.dp),
                             shape = MaterialTheme.shapes.large,

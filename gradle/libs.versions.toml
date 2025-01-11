@@ -1,4 +1,5 @@
 [versions]
+accompanist = "0.37.0"
 agp = "8.7.3"
 codeScanner = "2.3.2"
 coilCompose = "2.7.0"
@@ -55,6 +56,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 squircle-shape = { group = "io.github.stoyan-vuchev", name = "squircle-shape-android", version.ref = "squircle-shape" }
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
