@@ -3,7 +3,7 @@ package com.merahputihperkasa.prodigi.ui.screens
 import kotlinx.serialization.Serializable
 
 @Serializable
-object QRScan
+data class QRScan(val path: String? = null)
 
 @Serializable
 object History

@@ -1,16 +1,15 @@
 package com.merahputihperkasa.prodigi
 
 import android.Manifest
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -28,10 +27,10 @@ import com.merahputihperkasa.prodigi.ui.screens.QRScan
 import com.merahputihperkasa.prodigi.ui.screens.QRScanScreen
 import com.merahputihperkasa.prodigi.ui.screens.SubmissionHistory
 import com.merahputihperkasa.prodigi.ui.screens.SubmissionHistoryScreen
-import com.merahputihperkasa.prodigi.ui.screens.WorkSheetSubmission
-import com.merahputihperkasa.prodigi.ui.screens.WorkSheetDetailScreen
 import com.merahputihperkasa.prodigi.ui.screens.SubmissionResult
 import com.merahputihperkasa.prodigi.ui.screens.SubmissionResultScreen
+import com.merahputihperkasa.prodigi.ui.screens.WorkSheetDetailScreen
+import com.merahputihperkasa.prodigi.ui.screens.WorkSheetSubmission
 import com.merahputihperkasa.prodigi.ui.screens.WorkSheetSubmissionScreen
 import com.merahputihperkasa.prodigi.ui.screens.WorksheetDetail
 import com.merahputihperkasa.prodigi.utils.DataSyncWorker
@@ -65,9 +64,23 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf<com.merahputihperkasa.prodigi.models.WorkSheet?>(null)
             }
 
-            NavHost(navController, startDestination = QRScan) {
-                composable<QRScan> {
-                    QRScanScreen(navController)
+            NavHost(
+                navController,
+                startDestination = QRScan()
+            ) {
+                composable<QRScan>(
+                    deepLinks = listOf(
+                        navDeepLink {
+                            uriPattern = "https://${ProdigiApp.appModule.internalSourceTag}/{path}"
+                            action = Intent.ACTION_VIEW
+                        }
+                    )
+                ) {
+                    val path = it.arguments?.getString("path")
+                    val url = if (path != null) "https://${ProdigiApp.appModule.internalSourceTag}/$path"
+                        else null
+
+                    QRScanScreen(navController, url)
                 }
 
                 composable<History> {
@@ -76,9 +89,11 @@ class MainActivity : ComponentActivity() {
 
                 composable<WorksheetDetail>(
                     deepLinks = listOf(
-                        navDeepLink<WorksheetDetail>(
-                            basePath = "https://${ProdigiApp.appModule.internalSourceDomain}/quiz"
-                        )
+                        navDeepLink {
+                            uriPattern =
+                                "https://${ProdigiApp.appModule.internalSourceDomain}/quiz/{id}"
+                            action = Intent.ACTION_VIEW
+                        }
                     )
                 ) { backStackEntry ->
                     val workSheetUUID = backStackEntry.toRoute<WorksheetDetail>().id
@@ -216,14 +231,5 @@ class MainActivity : ComponentActivity() {
         predicate: (T) -> Boolean,
     ): T? {
         return entity.value.takeIf { it != null && predicate(it) }
-    }
-
-    private fun generalExceptionRollBack(navController: NavController) {
-        navController.popBackStack()
-        Toast.makeText(
-            this@MainActivity.applicationContext,
-            "Something went wrong",
-            Toast.LENGTH_SHORT
-        ).show()
     }
 }

@@ -19,13 +19,17 @@ import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QRScanScreen(navController: NavController) {
+fun QRScanScreen(navController: NavController, urlFromDeepLink: String? = null) {
     var result by remember {
         mutableStateOf<String?>(null)
     }
     val bottomSheetState =
         rememberModalBottomSheetState(skipPartiallyExpanded = false)
     var codeScanner by remember { mutableStateOf<CodeScanner?>(null) }
+
+    if (urlFromDeepLink != null) {
+        result = urlFromDeepLink
+    }
 
     ProdigiBookReaderTheme {
         Scaffold(content = { paddingValues ->
