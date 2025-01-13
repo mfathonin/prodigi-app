@@ -74,8 +74,9 @@ import com.merahputihperkasa.prodigi.ui.components.OptionsCard
 import com.merahputihperkasa.prodigi.ui.components.SubmitConfirmationDialog
 import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -203,21 +204,41 @@ fun WorkSheetSubmissionScreen(
                             Log.i("Prodigi.Worksheet", "submit.answers: $answers")
                             isLoadingOnSave.value = true
                             scope.launch {
-                                try {
-                                    val updatedSubmission = submitAnswer(
-                                        id,
-                                        workSheetFlow.value.data!!,
-                                        submissionFlow.value.data!!,
-                                        answers,
-                                        repo
-                                    )
-
-                                    onEvaluateSuccess.invoke(id, updatedSubmission)
-                                } catch (e: Exception) {
-                                    Log.e("Prodigi.Worksheet", "[submit.error.$id]: $e")
-                                } finally {
-                                    isLoadingOnSave.value = false
-                                }
+                                submitAnswer(
+                                    id,
+                                    workSheetFlow.value.data!!,
+                                    submissionFlow.value.data!!,
+                                    answers,
+                                    repo
+                                ).fold(
+                                    onSuccess = { updatedSubmission ->
+                                        onEvaluateSuccess.invoke(id, updatedSubmission)
+                                        isLoadingOnSave.value = false
+                                    },
+                                    onFailure = { error ->
+                                        isLoadingOnSave.value = false
+                                        when (error) {
+                                            is IllegalStateException -> {
+                                                Log.e(
+                                                    "Prodigi.Worksheet",
+                                                    "[submit.IllegalStateException.$id]: $error"
+                                                )
+                                            }// Handle evaluation failure
+                                            is IOException -> {
+                                                Log.e(
+                                                    "Prodigi.Worksheet",
+                                                    "[submit.IOException.$id]: $error"
+                                                )
+                                            } // Handle network error
+                                            else -> {
+                                                Log.e(
+                                                    "Prodigi.Worksheet",
+                                                    "[submit.ERROR.$id]: $error"
+                                                )
+                                            }
+                                        }
+                                    }
+                                )
                             }
                         }
                     )
@@ -276,29 +297,20 @@ suspend fun submitAnswer(
     submission: Submission,
     answers: List<Int>,
     repo: ProdigiRepositoryImpl
-): Submission? {
-    // cap the answer to worksheet.counts
-    var savedSubmission: Submission? = null
-
+): Result<Submission> {
     val cleanAnswers = answers.take(workSheet.counts)
-    repo.submitEvaluateAnswer(
-        submissionId,
-        workSheet.uuid,
-        submission.copy(
-            answers = cleanAnswers
-        )
-    ).collectLatest { res ->
-        Log.i("Prodigi.WorkSheet", "[evaluate.answer.$submissionId] ${res.data}")
-        res.data.let { subs ->
-            if (subs != null) {
-                savedSubmission = subs.copy(
-                    answers = cleanAnswers
-                )
-            }
-        }
+    return try {
+        repo.submitEvaluateAnswer(
+            submissionId,
+            workSheet.uuid,
+            submission.copy(answers = cleanAnswers)
+        ).last().data?.let { res ->
+            Log.i("Prodigi.WorkSheet", "[evaluate.answer.$submissionId] $res")
+            Result.success(res.copy(answers = cleanAnswers))
+        } ?: Result.failure(IllegalStateException("Submission evaluation failed"))
+    } catch (e: Exception) {
+        Result.failure(e)
     }
-
-    return savedSubmission
 }
 
 @Composable
