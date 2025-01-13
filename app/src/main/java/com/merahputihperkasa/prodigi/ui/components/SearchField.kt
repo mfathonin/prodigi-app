@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -70,7 +69,7 @@ fun SearchField(
                     colors = colors,
                     placeholder = {
                         Text(
-                            stringResource(R.string.search_placeholder),
+                            stringResource(R.string.content_search_placeholder),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     },
@@ -87,9 +86,9 @@ fun SearchField(
                                 .border(
                                     color = Color.DarkGray.copy(0.4f),
                                     width = 1.dp,
-                                    shape = CircleShape
+                                    shape = MaterialTheme.shapes.medium
                                 )
-                                .clip(CircleShape)
+                                .clip(MaterialTheme.shapes.medium)
                                 .background(Surface400)
                                 .padding(vertical = 6.dp)
                                 .padding(horizontal = 10.dp),

@@ -1,6 +1,5 @@
 package com.merahputihperkasa.prodigi.ui.components
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import com.merahputihperkasa.prodigi.ProdigiApp
 import com.merahputihperkasa.prodigi.R
 import com.merahputihperkasa.prodigi.models.Content
-import com.merahputihperkasa.prodigi.models.ContentEntity
 import com.merahputihperkasa.prodigi.repository.LoadDataStatus
 import com.merahputihperkasa.prodigi.repository.ProdigiRepositoryImpl
 import com.merahputihperkasa.prodigi.ui.theme.Secondary800
@@ -50,7 +48,7 @@ fun ResultBottomSheet(
     val contentId = result.substringAfter(ProdigiApp.appModule.internalSourceModules + "/")
 
     ModalBottomSheet(
-        onDismissRequest = { onDismissRequest() },
+        onDismissRequest = { onDismissRequest.invoke() },
         sheetState = sheetState
     ) {
         val scope = rememberCoroutineScope()
@@ -59,7 +57,7 @@ fun ResultBottomSheet(
         val prodigiRepository = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
 
         val content = remember {
-            MutableStateFlow<LoadDataStatus<List<Content>>>(LoadDataStatus.Loading())
+            MutableStateFlow<LoadDataStatus<Content>>(LoadDataStatus.Loading())
         }
         val contentResult = content.collectAsState()
 
@@ -71,12 +69,12 @@ fun ResultBottomSheet(
             }
         }
 
-        var titleId = R.string.internal_content_title
+        var titleId = R.string.qr_content_internal_title
         if (!isInternalSources) {
-            titleId = R.string.external_content_title
+            titleId = R.string.qr_external_content_title
         }
 
-        Box{
+        Box {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -88,7 +86,10 @@ fun ResultBottomSheet(
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
                 if (!isInternalSources) {
-                    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)) {
                         Text(text = result, modifier = Modifier.fillMaxWidth())
                         Button(
                             onClick = {
@@ -105,7 +106,7 @@ fun ResultBottomSheet(
                                 .offset(y = 16.dp),
                         ) {
                             if (isValidUrl) {
-                                Text(stringResource(R.string.url_link_button), color = Color.White)
+                                Text(stringResource(R.string.qr_url_link_button), color = Color.White)
                             } else {
                                 Text(
                                     stringResource(R.string.content_link_button),
@@ -131,9 +132,11 @@ fun ResultBottomSheet(
                         }
 
                         is LoadDataStatus.Error -> {
-                            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                            Column(modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)) {
                                 Text(
-                                    stringResource(R.string.fetch_content_error),
+                                    stringResource(R.string.content_fetch_error),
                                     modifier = Modifier.padding(top = 24.dp)
                                 )
                                 Button(
@@ -147,27 +150,29 @@ fun ResultBottomSheet(
                                         }
                                     }
                                 ) {
-                                    Text(stringResource(R.string.retry_button))
+                                    Text(stringResource(R.string.general_retry_button))
                                 }
                             }
                         }
 
                         is LoadDataStatus.Success -> {
-                            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                            Column(modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)) {
                                 Text(
-                                    stringResource(id = R.string.subtitle_content_list),
+                                    stringResource(id = R.string.content_subtitle_list),
                                     style = MaterialTheme.typography.labelLarge,
                                     color = Secondary800,
                                     modifier = Modifier.padding(bottom = 24.dp, top = 4.dp)
                                 )
-                                val data = (contentResult.value as LoadDataStatus.Success).data
-                                data?.forEach { content ->
-                                    ContentCardView(content, onItemClick = {
+                                val contentData = (contentResult.value as LoadDataStatus.Success).data
+                                if (contentData != null) {
+                                    ContentCardView(contentData, onItemClick = {
                                         scope.launch {
                                             try {
                                                 val currentTime = System.currentTimeMillis()
                                                 val expirationTime = currentTime + 60 * 60 * 1000
-                                                val newContent = content.toContentEntity(expirationTime)
+                                                val newContent = contentData.toContentEntity(expirationTime)
                                                 ProdigiApp.appModule.db.contentsDao.upsertContent(newContent)
                                                 Log.i(
                                                     "Prodigi.Room",
@@ -197,7 +202,7 @@ fun ResultBottomSheet(
 private suspend fun fetchContents(
     prodigiRepository: ProdigiRepositoryImpl,
     contentId: String,
-    content: MutableStateFlow<LoadDataStatus<List<Content>>>,
+    content: MutableStateFlow<LoadDataStatus<Content>>,
 ) {
     content.update { LoadDataStatus.Loading() }
     prodigiRepository.getDigitalContents(contentId)

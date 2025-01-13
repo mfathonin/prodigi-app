@@ -16,6 +16,4 @@ interface BannerItemsDao {
     @Query("DELETE FROM banners WHERE expiration_time <= :currentTime")
     suspend fun deleteExpiredBannerItems(currentTime: Long)
 
-    @Query("SELECT * FROM banners")
-    suspend fun getAllBannerItems(): List<BannerItemEntity>
 }

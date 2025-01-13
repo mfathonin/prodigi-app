@@ -14,10 +14,10 @@ android {
 
     defaultConfig {
         applicationId "com.merahputihperkasa.prodigi"
-        minSdk 21
+        minSdk 23
         targetSdk 35
-        versionCode 5
-        versionName '2.0.5'
+        versionCode 6
+        versionName '2.1.0'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -37,6 +37,14 @@ android {
             multiDexEnabled false
             debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField("String", "BUILD_TYPE", "\"release\"")
+        }
+        debug {
+            shrinkResources false
+            minifyEnabled false
+            multiDexEnabled false
+            debuggable true
+            buildConfigField("String", "BUILD_TYPE", "\"debug\"")
         }
     }
     room {
@@ -51,6 +59,7 @@ android {
     }
     buildFeatures {
         compose true
+        buildConfig true
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.1'
@@ -74,7 +83,9 @@ dependencies {
     implementation libs.androidx.navigation
     implementation libs.kotlinx.serialization.json
     implementation libs.androidx.work.runtime.ktx
-    
+    implementation libs.squircle.shape
+    implementation libs.accompanist.permissions
+
     // Code Scanner
     implementation libs.code.scanner
 
@@ -88,6 +99,8 @@ dependencies {
     // Room DB
     implementation libs.room
     implementation libs.room.coroutine
+    implementation libs.androidx.constraintlayout
+    implementation libs.androidx.constraintlayout.compose
     annotationProcessor libs.room.compiler
     // To use Kotlin Symbol Processing (KSP)
     ksp libs.room.compiler

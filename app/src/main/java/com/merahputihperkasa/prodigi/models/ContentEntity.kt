@@ -17,6 +17,8 @@ data class ContentEntity(
     val contentId: String,
     @ColumnInfo(name = "title")
     val title: String,
+    @ColumnInfo(name = "type")
+    val type: String,
     @ColumnInfo(name = "collection_name")
     val collectionName: String,
     @ColumnInfo(name = "target_link")
@@ -30,6 +32,7 @@ data class ContentEntity(
 fun ContentEntity.toContent() = Content(
     id = contentId,
     title = title,
+    type = type,
     collection = Collection(name = collectionName),
     link = Link(url = contentKey, targetUrl = targetLink)
 )

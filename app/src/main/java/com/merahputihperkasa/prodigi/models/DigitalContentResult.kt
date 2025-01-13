@@ -5,5 +5,8 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 data class DigitalContentResult(
-    @SerializedName("contents") val contents: List<Content>,
+    @SerializedName("success")
+    val success: Boolean,
+    @SerializedName("data")
+    val data: Content,
 )

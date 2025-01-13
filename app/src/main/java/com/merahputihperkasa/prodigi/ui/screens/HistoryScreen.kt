@@ -1,17 +1,18 @@
 package com.merahputihperkasa.prodigi.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -38,14 +39,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -66,6 +68,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import sv.lib.squircleshape.CornerSmoothing
+import sv.lib.squircleshape.SquircleShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,8 +109,11 @@ fun HistoryScreen(navController: NavController, modifier: Modifier = Modifier) {
         } else 0
 
         LaunchedEffect(key1 = searchValue) {
-            scope.launch {
-                loadContents(contentListFlow, prodigiRepository, searchValue)
+            if (searchValue.isNotEmpty()) {
+                scope.launch {
+                    loadContents(contentListFlow, prodigiRepository, searchValue)
+                    Log.i("Prodigi.History", "[loadContents.query.$searchValue] $contentListFlow")
+                }
             }
         }
 
@@ -116,6 +123,7 @@ fun HistoryScreen(navController: NavController, modifier: Modifier = Modifier) {
                 if (event == Lifecycle.Event.ON_RESUME) {
                     scope.launch {
                         loadContents(contentListFlow, prodigiRepository, searchValue)
+                        Log.i("Prodigi.History", "[loadContents.ON_RESUME] $contentListFlow")
                     }
                 }
             }
@@ -139,7 +147,10 @@ fun HistoryScreen(navController: NavController, modifier: Modifier = Modifier) {
                     }
                 },
                 colors = TopAppBarDefaults.mediumTopAppBarColors().copy(
-                    containerColor = topAppBarContainerColor
+                    containerColor = topAppBarContainerColor,
+                    scrolledContainerColor = topAppBarContainerColor,
+                    titleContentColor = topAppBarContainerColor,
+
                 )
             )
         }, content = { paddingValues ->
@@ -154,40 +165,43 @@ fun HistoryScreen(navController: NavController, modifier: Modifier = Modifier) {
                 ) { value -> searchValue = value }
                 if (contentList.value is LoadDataStatus.Success) {
                     ContentsCounterCaption(topAppBarContainerColor, dataCount)
+                } else {
+                    Box(Modifier.fillMaxWidth().height(30.dp).background(topAppBarContainerColor))
                 }
 
-                val roundSize = (24 * (1 - scrollBehavior.state.collapsedFraction)).dp
-                val shape = RoundedCornerShape(topStart = roundSize, topEnd = roundSize)
+                val roundSize = (32 * (1 - scrollBehavior.state.collapsedFraction)).dp
+                val shape = SquircleShape(
+                    topStart = roundSize, topEnd = roundSize,
+                    cornerSmoothing = CornerSmoothing.Medium
+                )
 
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(topAppBarContainerColor)
-                        .clip(shape)
-                        .background(Surface400)
+                        .background(Surface400, shape)
                         .verticalScroll(rememberScrollState())
                         .padding(top = 8.dp)
                         .padding(16.dp),
-
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     when (contentList.value) {
                         is LoadDataStatus.Loading -> {
-                            LoadingState()
+                            LoadingState(color = Color.DarkGray.copy(alpha = .7f))
                         }
 
                         is LoadDataStatus.Error -> {
                             val error = contentList.value as LoadDataStatus.Error
                             ErrorState(
                                 error = error,
-                                errorDescriptor = stringResource(R.string.error_load_content)
+                                errorDescriptor = stringResource(R.string.content_error_load)
                             )
                         }
 
                         else -> {
                             val contents = (contentList.value as LoadDataStatus.Success).data
                             if (contents.isNullOrEmpty()) {
-                                EmptyState(dataDescription = stringResource(R.string.empty_content_descriptor))
+                                EmptyState(emptyDataDescription = stringResource(R.string.content_empty_descriptor))
                             } else {
                                 contents.forEach { contentEntity ->
                                     val content = contentEntity.toContent()
@@ -214,7 +228,10 @@ private suspend fun loadContents(
 }
 
 @Composable
-fun LoadingState(modifier: Modifier = Modifier) {
+fun LoadingState(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onBackground.copy(alpha = .6f)
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -222,9 +239,12 @@ fun LoadingState(modifier: Modifier = Modifier) {
             .fillMaxSize()
             .padding(top = 50.dp)
     ) {
-        CircularProgressIndicator()
+        CircularProgressIndicator(
+            color = color
+        )
         Text(
-            stringResource(R.string.loading), modifier = Modifier.padding(8.dp), color = Color.Black
+            stringResource(R.string.general_load_data), modifier = Modifier.padding(8.dp),
+            color = color
         )
     }
 }
@@ -235,23 +255,28 @@ fun <T> ErrorState(
     error: LoadDataStatus.Error<T>,
     errorDescriptor: String = "",
 ) {
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+
     Column(
         modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
-            painter = painterResource(R.drawable.no_documents),
+            painter = painterResource(R.mipmap.no_documents),
             contentDescription = "Error on load",
             modifier = Modifier
-                .height(180.dp)
+                .width(min(screenWidth * .35f, 140.dp))
                 .padding(vertical = 24.dp)
         )
+        Spacer(Modifier.height(20.dp))
         Text(
-            stringResource(R.string.error_msg, errorDescriptor), color = Color.Black
+            stringResource(R.string.general_error_msg, errorDescriptor),
+            color = MaterialTheme.colorScheme.onBackground
         )
         error.message?.let { msg ->
             Text(
-                "Code: $msg", color = Color.Black.copy(alpha = 0.5f),
+                "Code: $msg",
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                 style = MaterialTheme.typography.labelSmall
                     .copy(fontStyle = FontStyle.Italic)
             )
@@ -260,21 +285,25 @@ fun <T> ErrorState(
 }
 
 @Composable
-fun EmptyState(modifier: Modifier = Modifier, dataDescription: String) {
+fun EmptyState(modifier: Modifier = Modifier, emptyDataDescription: String) {
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+
     Column(
         modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Image(
-            painter = painterResource(R.drawable.no_search_result),
+            painter = painterResource(R.mipmap.no_search_result),
             contentDescription = "Error on load",
             modifier = Modifier
-                .height(180.dp)
+                .width(min(screenWidth * .35f, 140.dp))
                 .padding(vertical = 24.dp)
         )
+        Spacer(Modifier.height(20.dp))
         Text(
-            stringResource(R.string.no_data, dataDescription), color = Color.Black
+            stringResource(R.string.general_no_data, emptyDataDescription),
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }

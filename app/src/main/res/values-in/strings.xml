@@ -1,19 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="internal_content_title">Konten Digital</string>
-    <string name="external_content_title">Hasil Scan</string>
-    <string name="url_link_button">Buka tautan</string>
-    <string name="welcome_instruction">Arahkan kamera pada QR Code untuk memindai</string>
+
+    <string name="qr_welcome_instruction">Arahkan kamera pada QR Code untuk memindai</string>
+    <string name="qr_content_internal_title">Konten Digital</string>
+    <string name="qr_external_content_title">Hasil Scan</string>
+    <string name="qr_url_link_button">Buka tautan</string>
+
     <string name="content_link_button">Salin data</string>
-    <string name="retry_button">Coba lagi</string>
-    <string name="fetch_content_error">Gagal memuat konten digital</string>
-    <string name="subtitle_content_list">Pilih konten digital yang ingin dibuka</string>
-    <string name="history_title">Riwayat</string>
-    <string name="search_placeholder">Cari konten digital</string>
-    <string name="list_counter_caption">Manampilkan %1$s konten digital</string>
-    <string name="loading">Memuat data</string>
-    <string name="no_data">Tidak ditemukan data %1$s</string>
-    <string name="error_msg">Terjadi kesalahan %1$s</string>
-    <string name="error_load_content">memuat konten digital</string>
-    <string name="empty_content_descriptor">konten digital</string>
+    <string name="content_fetch_error">Gagal memuat konten digital</string>
+    <string name="content_subtitle_list">Pilih konten digital yang ingin dibuka</string>
+    <string name="content_search_placeholder">Cari konten digital</string>
+    <string name="content_list_counter_caption">Manampilkan %1$s konten digital</string>
+    <string name="content_error_load">memuat konten digital</string>
+    <string name="content_empty_descriptor">konten digital</string>
+
+    <string name="worksheet_title">Lembar Kerja</string>
+    <string name="worksheet_error_load">memuat lembar kerja</string>
+    <string name="worksheet_error_descriptor">lembar kerja</string>
+    <string name="worksheet_question_numbers">%1$s Soal</string>
+    <string name="worksheet_start_button_label">Mulai mengerjakan</string>
+    <string name="worksheet_button_finish">Selesai (%1$s / %2$s)</string>
+    <string name="worksheet_clear_answer">Hapus</string>
+    <string name="worksheet_submit_button_label">Kirim</string>
+    <string name="worksheet_confirmation_title">Mengirim Lembar Jawab</string>
+    <string name="worksheet_confirmation_desc">Apakah anda yakin ingin mengirim lembar jawab ini?</string>
+    <string name="worksheet_history_button_label">Riwayat</string>
+
+    <string name="profile_form_title">Data diri</string>
+    <string name="profile_form_desc">Lengkapi data diri untuk membuka lembar jawab</string>
+    <string name="profile_field_class_name">Kelas</string>
+    <string name="profile_field_id_number">Nomor Urut</string>
+    <string name="profile_field_name">Nama</string>
+    <string name="profile_field_school_name">Sekolah</string>
+
+    <string name="submission_saved">Lembar jawab tersimpan</string>
+    <string name="submission_loading_save_label">Memproses lembar jawab</string>
+    <string name="submission_result_greetings">Selamat Telah Menyelesaikan Lembar Kerja!</string>
+    <string name="submission_result_correct_count_label">Jawaban Benar</string>
+    <string name="submission_result_share_error_descriptor">menyimpan gambar lembar jawab</string>
+    <string name="submission_card_desc">Kelas %1$s | No. %2$s</string>
+    <string name="submission_history_title">Riwayat Lembar Kerja</string>
+    <string name="submission_error_descriptor">riwayat lembar kerja.</string>
+
+    <string name="permission_request_storage_message">Izin penyimpanan diperlukan untuk menyimpan gambar</string>
+    <string name="permission_request_storage_action_label">Berikan Akses</string>
+
+    <string name="general_retry_button">Coba lagi</string>
+    <string name="general_history_title">Riwayat</string>
+    <string name="general_load_data">Memuat data</string>
+    <string name="general_no_data">Tidak ditemukan data %1$s</string>
+    <string name="general_error_msg">Terjadi kesalahan %1$s</string>
+    <string name="general_press_again_to_exit">Tekan kembali untuk menutup lembar kerja</string>
+    <string name="general_cancel_button_label">Batal</string>
+    <string name="general_share_button">Bagikan</string>
+    <string name="general_finish_button">Selesai</string>
 </resources>
