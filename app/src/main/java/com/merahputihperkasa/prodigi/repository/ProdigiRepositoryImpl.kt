@@ -196,7 +196,7 @@ class ProdigiRepositoryImpl(
     override suspend fun getSubmissionOnWorkSheetId(workSheetId: String): Flow<LoadDataStatus<SubmissionEntity?>> = flow {
         emit(LoadDataStatus.Loading())
         try {
-            val submissions = db.submissionDao.getSubmissionsByWorksheetUuid(workSheetId)
+            val submissions = db.submissionDao.getSubmissionByWorksheetUuid(workSheetId)
             emit(LoadDataStatus.Success(submissions))
             Log.i("Prodigi.Repository", "[getSubmissionOnWorkSheetId.$workSheetId] $submissions")
         } catch (e: Exception) {
@@ -246,7 +246,7 @@ class ProdigiRepositoryImpl(
             Log.i("Prodigi.Repository", "[submitEvaluateAnswer.$workSheetId] Marked as \"DONE\"; SubmissionID: $submissionId, score: ${finalSubmissionEntity.totalPoints}")
         } else {
             Log.e("Prodigi.Repository", "[submitEvaluateAnswer.$workSheetId] Failed to evaluate answers, $result")
-            emit(LoadDataStatus.Error("Failed to evaluate answers", submission))
+            emit(LoadDataStatus.Error("Failed to evaluate answers $result", submission))
         }
     }
 }

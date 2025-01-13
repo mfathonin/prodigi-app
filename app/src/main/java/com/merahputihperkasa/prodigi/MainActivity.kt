@@ -44,10 +44,11 @@ class MainActivity : ComponentActivity() {
             Manifest.permission.INTERNET,
         )
 
-        permissions.forEach {
-            if (checkSelfPermission(it) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(permissions.toTypedArray(), 0)
-            }
+        val unGrantedPermissions = permissions.filter {
+            checkSelfPermission(it) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        }
+        if (unGrantedPermissions.isNotEmpty()) {
+            requestPermissions(unGrantedPermissions.toTypedArray(), 0)
         }
     }
 
@@ -76,7 +77,7 @@ class MainActivity : ComponentActivity() {
                         }
                     )
                 ) {
-                    val path = it.arguments?.getString("path")
+                    val path = it.arguments?.getString("path")?.trim()
                     val url = if (path != null) "https://${ProdigiApp.appModule.internalSourceTag}/$path"
                         else null
 

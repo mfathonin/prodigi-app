@@ -21,81 +21,52 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.merahputihperkasa.prodigi.ProdigiApp
 import com.merahputihperkasa.prodigi.R
 import com.merahputihperkasa.prodigi.models.Profile
 import com.merahputihperkasa.prodigi.models.SubmissionEntity
-import com.merahputihperkasa.prodigi.models.WorkSheet
-import com.merahputihperkasa.prodigi.repository.LoadDataStatus
-import com.merahputihperkasa.prodigi.repository.ProdigiRepositoryImpl
-import com.merahputihperkasa.prodigi.ui.screens.loadSubmissionHistory
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import sv.lib.squircleshape.CornerSmoothing
 import sv.lib.squircleshape.SquircleShape
 
 @Composable
 fun ProfileForm(
-    workSheet: WorkSheet,
     submission: SubmissionEntity? = null,
-    onNavigateToHistories: (workSheet: WorkSheet) -> Unit = {},
-    onSubmitted: (id: Int) -> Unit = {},
+    submissionCount: Int = 0,
+    onNavigateToHistories: () -> Unit = {},
+    onSubmitted: (profileData: Profile) -> Unit = {},
 ) {
-    val context = LocalContext.current
-    val repo = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
-    val profile = submission?.toSubmission()?.profile
+    val initialProfile = submission?.toSubmission()?.profile
 
-    var name by rememberSaveable { mutableStateOf(profile?.name ?: "") }
-    var idNumber by rememberSaveable { mutableStateOf(profile?.idNumber ?: "") }
-    var className by rememberSaveable { mutableStateOf(profile?.className ?: "") }
-    var schoolName by rememberSaveable { mutableStateOf(profile?.schoolName ?: "") }
+    var name by rememberSaveable { mutableStateOf(initialProfile?.name ?: "") }
+    var idNumber by rememberSaveable { mutableStateOf(initialProfile?.numberId ?: "") }
+    var className by rememberSaveable { mutableStateOf(initialProfile?.className ?: "") }
+    var schoolName by rememberSaveable { mutableStateOf(initialProfile?.schoolName ?: "") }
     val isFormValid by remember {
         derivedStateOf {
             name.isNotBlank() && idNumber.isNotBlank() && className.isNotBlank() && schoolName.isNotBlank()
         }
     }
-    val scope = rememberCoroutineScope()
+    val profile = Profile(name, idNumber, className, schoolName)
 
-    val submissionHistoriesFlow = remember {
-        MutableStateFlow<LoadDataStatus<List<SubmissionEntity>>>(LoadDataStatus.Loading())
-    }
-    val submissionCount: Int = submissionHistoriesFlow.collectAsState().value.data?.size ?: 0
-
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(key1 = lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                scope.launch {
-                    loadSubmissionHistory(workSheet.uuid, submissionHistoriesFlow, repo)
-                }
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
+    fun resetForm() {
+        name = ""
+        idNumber = ""
+        className = ""
+        schoolName = ""
     }
 
     val keyboardOptions = KeyboardOptions(
@@ -175,19 +146,8 @@ fun ProfileForm(
             ),
             keyboardActions = KeyboardActions {
                 if (isFormValid) {
-                    scope.launch {
-                        handleSubmitProfile(
-                            repo, workSheet, Profile(
-                                name, idNumber, className, schoolName
-                            ), submission, onSubmitted
-                        )
-
-                        // Reset form state
-                        name = ""
-                        idNumber = ""
-                        className = ""
-                        schoolName = ""
-                    }
+                    onSubmitted.invoke(profile)
+                    resetForm()
                 }
             }
         )
@@ -199,9 +159,7 @@ fun ProfileForm(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Button(
-            onClick = {
-                onNavigateToHistories.invoke(workSheet)
-            },
+            onClick = onNavigateToHistories,
             enabled = submissionCount > 0,
             shape = MaterialTheme.shapes.large,
             colors = ButtonDefaults.outlinedButtonColors(),
@@ -217,21 +175,8 @@ fun ProfileForm(
         Button(
             onClick = {
                 if (isFormValid) {
-                    scope.launch {
-                        handleSubmitProfile(
-                            repo, workSheet, Profile(
-                                name, idNumber, className, schoolName
-                            ), submission
-                        ) {
-                            onSubmitted.invoke(it)
-                        }
-
-                        // Reset form state
-                        name = ""
-                        idNumber = ""
-                        className = ""
-                        schoolName = ""
-                    }
+                    onSubmitted.invoke(profile)
+                    resetForm()
                 }
             },
             enabled = isFormValid,
@@ -242,27 +187,4 @@ fun ProfileForm(
         }
     }
     Spacer(modifier = Modifier.height(15.dp))
-}
-
-suspend fun handleSubmitProfile(
-    repo: ProdigiRepositoryImpl,
-    workSheet: WorkSheet,
-    profile: Profile,
-    submissionEntity: SubmissionEntity? = null,
-    onSubmitted: (id: Int) -> Unit = {}
-) {
-    val workSheetId = workSheet.uuid
-    val count = workSheet.counts
-    val submission = submissionEntity?.toSubmission()
-    val answers = submission?.answers
-
-    // Save data to Room database
-    val id = repo.upsertSubmission(
-        id = submissionEntity?.id, workSheetId,
-        profile.name, profile.idNumber, profile.className, profile.schoolName,
-        answers = answers ?: List(count) { -1 }
-    )
-
-    // Navigate to the next screen
-    onSubmitted.invoke(submissionEntity?.id ?: id)
 }

@@ -103,7 +103,7 @@ fun SubmissionHistoryScreen(
             topBar = {
                 TopAppBar(title = {
                     Text(
-                        stringResource(R.string.submission_hitory_title),
+                        stringResource(R.string.submission_history_title),
                         modifier = Modifier.padding(5.dp, 10.dp, 5.dp)
                     )
                 })
@@ -214,7 +214,13 @@ fun SubmissionHistoryContent(
                         )
                     }
                     CircularProgressIndicator(
-                        progress = { (submission.correctAnswers ?: counts) / (counts.toFloat()) },
+                        progress = {
+                            if (counts > 0) {
+                                (submission.correctAnswers ?: counts) / counts.toFloat()
+                            } else {
+                                0f
+                            }
+                        },
                         modifier = Modifier.size(100.dp),
                         color = MaterialTheme.colorScheme.surfaceTint,
                         strokeWidth = 6.dp

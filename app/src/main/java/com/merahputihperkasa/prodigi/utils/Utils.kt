@@ -9,7 +9,6 @@ import android.graphics.Bitmap
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
-import androidx.core.content.ContextCompat.startActivity
 import androidx.room.TypeConverter
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
@@ -38,7 +37,11 @@ class IntListConverter {
         if (value.isEmpty()) {
             return emptyList()
         }
-        return value.split(",").map { it.toInt() }
+        return try {
+            value.split(",").map { it.trim().toInt() }
+        } catch (e: NumberFormatException) {
+            throw IllegalArgumentException("Invalid integer format in the stored value", e)
+        }
     }
 
     @TypeConverter

@@ -1,5 +1,6 @@
 package com.merahputihperkasa.prodigi.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -21,15 +22,17 @@ import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 @Composable
 fun QRScanScreen(navController: NavController, urlFromDeepLink: String? = null) {
     var result by remember {
-        mutableStateOf<String?>(null)
+        mutableStateOf(urlFromDeepLink.let {
+            if (it != null) try {
+                android.net.Uri.parse(it)
+                it
+            } catch (e: Exception) { null }
+            else { null }
+        })
     }
     val bottomSheetState =
         rememberModalBottomSheetState(skipPartiallyExpanded = false)
     var codeScanner by remember { mutableStateOf<CodeScanner?>(null) }
-
-    if (urlFromDeepLink != null) {
-        result = urlFromDeepLink
-    }
 
     ProdigiBookReaderTheme {
         Scaffold(content = { paddingValues ->

@@ -49,5 +49,5 @@
     <string name="general_cancel_button_label">Batal</string>
     <string name="general_share_button">Bagikan</string>
     <string name="general_finish_button">Selesai</string>
-    <string name="submission_hitory_title">Riwayat Lembar Kerja</string>
+    <string name="submission_history_title">Riwayat Lembar Kerja</string>
 </resources>

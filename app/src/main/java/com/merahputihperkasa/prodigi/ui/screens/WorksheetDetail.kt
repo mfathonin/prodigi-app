@@ -55,6 +55,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.merahputihperkasa.prodigi.ProdigiApp
 import com.merahputihperkasa.prodigi.R
+import com.merahputihperkasa.prodigi.models.Profile
 import com.merahputihperkasa.prodigi.models.SubmissionEntity
 import com.merahputihperkasa.prodigi.models.WorkSheet
 import com.merahputihperkasa.prodigi.repository.LoadDataStatus
@@ -94,9 +95,13 @@ fun WorkSheetDetailScreen(
         val submissionEntityFlow = remember {
             MutableStateFlow<LoadDataStatus<SubmissionEntity?>>(LoadDataStatus.Loading())
         }
+        val submissionHistoriesFlow = remember {
+            MutableStateFlow<LoadDataStatus<List<SubmissionEntity>>>(LoadDataStatus.Loading())
+        }
 
         val workSheetConf = workSheetConfFlow.collectAsState()
         val submissionEntity = submissionEntityFlow.collectAsState()
+        val submissionCount: Int = submissionHistoriesFlow.collectAsState().value.data?.size ?: 0
 
         val lifecycleOwner = LocalLifecycleOwner.current
         DisposableEffect(key1 = lifecycleOwner) {
@@ -105,6 +110,7 @@ fun WorkSheetDetailScreen(
                     scope.launch {
                         loadWorkSheetByUUID(workSheetUUID, repo, workSheetConfFlow)
                         loadSubmissionByWorkSheetId(workSheetUUID, repo, submissionEntityFlow)
+                        loadSubmissionHistory(workSheetUUID, submissionHistoriesFlow, repo)
                     }
                 }
             }
@@ -146,11 +152,19 @@ fun WorkSheetDetailScreen(
                             Spacer(Modifier.height(20.dp))
 
                             ProfileForm(
-                                workSheet,
                                 submission = submission,
-                                onNavigateToHistories = onNavigateToHistories,
-                                onSubmitted = { submissionId ->
-                                    onNavigateStart.invoke(submissionId, workSheet.uuid, workSheet)
+                                submissionCount = submissionCount,
+                                onNavigateToHistories = {
+                                    onNavigateToHistories.invoke(workSheet)
+                                },
+                                onSubmitted = { profile ->
+                                    scope.launch {
+                                        handleSubmitProfile(
+                                            repo, workSheet, profile, submission
+                                        ) { id ->
+                                            onNavigateStart.invoke(id, workSheet.uuid, workSheet)
+                                        }
+                                    }
                                 },
                             )
                         } else {
@@ -319,6 +333,33 @@ fun WorkSheetHeader(workSheet: WorkSheet) {
                 )
             )
         }
+    }
+}
+
+suspend fun handleSubmitProfile(
+    repo: ProdigiRepositoryImpl,
+    workSheet: WorkSheet,
+    profile: Profile,
+    submissionEntity: SubmissionEntity? = null,
+    onSubmitted: (id: Int) -> Unit = {}
+) {
+    val workSheetId = workSheet.uuid
+    val count = workSheet.counts
+    val submission = submissionEntity?.toSubmission()
+    val answers = submission?.answers
+
+    try {
+        // Save data to Room database
+        val id = repo.upsertSubmission(
+            id = submissionEntity?.id, workSheetId,
+            profile.name, profile.numberId, profile.className, profile.schoolName,
+            answers = answers ?: List(count) { -1 }
+        )
+
+        // Navigate to the next screen
+        onSubmitted.invoke(submissionEntity?.id ?: id)
+    } catch (e: Exception) {
+        Log.e("Prodigi.Profile", "[handleSubmitProfile] error on upsert submission $e, $submission")
     }
 }
 

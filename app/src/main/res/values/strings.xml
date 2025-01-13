@@ -49,5 +49,7 @@
     <string name="general_cancel_button_label">Batal</string>
     <string name="general_share_button">Bagikan</string>
     <string name="general_finish_button">Selesai</string>
-    <string name="submission_hitory_title">Riwayat Lembar Kerja</string>
+    <string name="submission_history_title">Riwayat Lembar Kerja</string>
+    <string name="permission_request_storage_message">The storage permission is needed to save the image</string>
+    <string name="permission_request_storage_action_label">Grant Access</string>
 </resources>

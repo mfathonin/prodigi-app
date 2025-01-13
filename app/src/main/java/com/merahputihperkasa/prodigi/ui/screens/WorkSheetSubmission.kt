@@ -263,7 +263,7 @@ suspend fun saveAnswers(
         id = submissionId,
         workSheet.uuid,
         submission.profile.name,
-        submission.profile.idNumber,
+        submission.profile.numberId,
         submission.profile.className,
         submission.profile.schoolName,
         cleanAnswers
@@ -535,7 +535,13 @@ fun WorkSheetSubmissionContent(
                             "[upsertSubmission.ON_PAUSE] isFinished: $isFinished, $answers"
                         )
                         scope.launch {
-                            onSave.invoke(answers.value) {}
+                            try {
+                                onSave.invoke(answers.value) {
+                                    Log.i("Prodigi.Worksheet", "Auto-save successful")
+                                }
+                            } catch (e: Exception) {
+                                Log.e("Prodigi.Worksheet", "Failed to auto-save answers", e)
+                            }
                         }
                     }
                 }

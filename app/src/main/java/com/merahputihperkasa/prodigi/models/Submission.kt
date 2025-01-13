@@ -42,7 +42,7 @@ data class SubmissionEntity (
         return Submission(
             profile = Profile(
                 name = name,
-                idNumber = idNumber,
+                numberId = idNumber,
                 className = className,
                 schoolName = schoolName
             ),
@@ -56,7 +56,7 @@ data class SubmissionEntity (
 @Keep
 data class Profile (
     @SerializedName("name") val name: String,
-    @SerializedName("numberId") val idNumber: String,
+    @SerializedName("numberId") val numberId: String,
     @SerializedName("className") val className: String,
     @SerializedName("schoolName") val schoolName: String
 )
@@ -72,7 +72,7 @@ data class Submission (
         return SubmissionEntity(
             id,
             name = profile.name,
-            idNumber = profile.idNumber,
+            idNumber = profile.numberId,
             className = profile.className,
             schoolName = profile.schoolName,
             answers,
@@ -84,7 +84,7 @@ data class Submission (
     fun toSubmissionBody(): SubmissionBody {
         return SubmissionBody(
             name = profile.name,
-            numberId = profile.idNumber,
+            numberId = profile.numberId,
             className = profile.className,
             schoolName = profile.schoolName,
             answers
@@ -95,7 +95,7 @@ data class Submission (
 @Keep
 data class SubmissionResult (
     @SerializedName("success") val success: Boolean,
-    @SerializedName("data") val data: Submission
+    @SerializedName("data") val data: Submission,
 )
 
 @Keep

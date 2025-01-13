@@ -48,7 +48,7 @@ fun ResultBottomSheet(
     val contentId = result.substringAfter(ProdigiApp.appModule.internalSourceModules + "/")
 
     ModalBottomSheet(
-        onDismissRequest = { onDismissRequest() },
+        onDismissRequest = { onDismissRequest.invoke() },
         sheetState = sheetState
     ) {
         val scope = rememberCoroutineScope()

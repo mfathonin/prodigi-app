@@ -115,8 +115,8 @@ fun SubmissionResultScreen(
                 scope.launch {
 
                     val result = snackBarHostState.showSnackbar(
-                        message = "The storage permission is needed to save the image",
-                        actionLabel = "Grant Access"
+                        message = context.getString(R.string.permission_request_storage_message),
+                        actionLabel = context.getString(R.string.permission_request_storage_action_label)
                     )
 
                     if (result == SnackbarResult.ActionPerformed) {
@@ -354,7 +354,7 @@ fun SubmissionResultScreen(
                             "${profile?.name}", style = MaterialTheme.typography.headlineSmall
                         )
                         Text(
-                            "${profile?.schoolName} | ${profile?.className} |  ${profile?.idNumber}",
+                            "${profile?.schoolName} | ${profile?.className} |  ${profile?.numberId}",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
