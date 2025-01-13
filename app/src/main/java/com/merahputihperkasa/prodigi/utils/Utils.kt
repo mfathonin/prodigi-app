@@ -12,6 +12,7 @@ import android.os.Environment
 import androidx.room.TypeConverter
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
+import java.io.IOException
 import kotlin.coroutines.resume
 
 fun isValidURi(uri: String): Boolean {
@@ -54,10 +55,13 @@ class IntListConverter {
 }
 
 suspend fun Bitmap.saveToDisk(context: Context): Uri {
+    require(!this.isRecycled) { "Cannot save recycled bitmap" }
     val file = File(
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
         "screenshot-${System.currentTimeMillis()}.png"
     )
+
+    if (file.exists()) file.delete()
 
     file.writeBitmap(this, Bitmap.CompressFormat.PNG, 100)
 
@@ -85,9 +89,15 @@ suspend fun scanFilePath(context: Context, filePath: String): Uri? {
 }
 
 fun File.writeBitmap(bitmap: Bitmap, format: Bitmap.CompressFormat, quality: Int) {
-    outputStream().use { out ->
-        bitmap.compress(format, quality, out)
-        out.flush()
+    try {
+        outputStream().use { out ->
+            if (!bitmap.compress(format, quality, out)) {
+                throw IOException("Failed to compress bitmap")
+            }
+            out.flush()
+        }
+    } catch (e: IOException) {
+        throw IOException("Failed to write bitmap to file: ${e.message}", e)
     }
 }
 

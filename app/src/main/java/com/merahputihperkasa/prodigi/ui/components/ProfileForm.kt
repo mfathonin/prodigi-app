@@ -52,19 +52,19 @@ fun ProfileForm(
     val initialProfile = submission?.toSubmission()?.profile
 
     var name by rememberSaveable { mutableStateOf(initialProfile?.name ?: "") }
-    var idNumber by rememberSaveable { mutableStateOf(initialProfile?.numberId ?: "") }
+    var numberId by rememberSaveable { mutableStateOf(initialProfile?.numberId ?: "") }
     var className by rememberSaveable { mutableStateOf(initialProfile?.className ?: "") }
     var schoolName by rememberSaveable { mutableStateOf(initialProfile?.schoolName ?: "") }
     val isFormValid by remember {
         derivedStateOf {
-            name.isNotBlank() && idNumber.isNotBlank() && className.isNotBlank() && schoolName.isNotBlank()
+            name.isNotBlank() && numberId.isNotBlank() && className.isNotBlank() && schoolName.isNotBlank()
         }
     }
-    val profile = Profile(name, idNumber, className, schoolName)
+    val profile = Profile(name, numberId, className, schoolName)
 
     fun resetForm() {
         name = ""
-        idNumber = ""
+        numberId = ""
         className = ""
         schoolName = ""
     }
@@ -128,8 +128,8 @@ fun ProfileForm(
             )
             Spacer(Modifier.width(10.dp))
             RoundedTextField(
-                value = idNumber,
-                onValueChange = { idNumber = it },
+                value = numberId,
+                onValueChange = { numberId = it },
                 label = stringResource(R.string.profile_field_id_number),
                 keyboardOptions = keyboardOptions,
                 required = true,

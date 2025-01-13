@@ -158,7 +158,7 @@ class ProdigiRepositoryImpl(
         id: Int?,
         workSheetId: String,
         name: String,
-        idNumber: String,
+        numberId: String,
         className: String,
         schoolName: String,
         answers: List<Int>
@@ -170,14 +170,14 @@ class ProdigiRepositoryImpl(
         }
         val submission = existingSubmission?.copy(
             name = name,
-            idNumber = idNumber,
+            numberId = numberId,
             className = className,
             schoolName = schoolName,
             worksheetUuid = workSheetId,
             answers = answers
         ) ?: SubmissionEntity(
             id = id ?: 0,
-            name, idNumber, className, schoolName,
+            name, numberId, className, schoolName,
             worksheetUuid = workSheetId,
             answers = answers
         )

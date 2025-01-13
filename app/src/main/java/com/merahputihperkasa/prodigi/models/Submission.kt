@@ -24,7 +24,7 @@ data class SubmissionEntity (
 
     val name: String,
     @ColumnInfo(name = "id_number")
-    val idNumber: String,
+    val numberId: String,
     @ColumnInfo(name = "class_name")
     val className: String,
     @ColumnInfo(name = "school_name")
@@ -42,7 +42,7 @@ data class SubmissionEntity (
         return Submission(
             profile = Profile(
                 name = name,
-                numberId = idNumber,
+                numberId = numberId,
                 className = className,
                 schoolName = schoolName
             ),
@@ -72,7 +72,7 @@ data class Submission (
         return SubmissionEntity(
             id,
             name = profile.name,
-            idNumber = profile.numberId,
+            numberId = profile.numberId,
             className = profile.className,
             schoolName = profile.schoolName,
             answers,

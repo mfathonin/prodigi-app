@@ -340,7 +340,7 @@ fun WorkSheetSubmissionContent(
             )
 
             if (answers.value.size != count) {
-                answers.value = List(count!!) { -1 }
+                answers.value = List(count ?: 0) { -1 }
             }
 
             LaunchedEffect(key1 = submission.value) {
@@ -480,7 +480,7 @@ fun WorkSheetSubmissionContent(
                         stringResource(
                             R.string.worksheet_button_finish,
                             answers.value.filter { it >= 0 }.size,
-                            count!!
+                            count ?: 0
                         )
                     )
                 }

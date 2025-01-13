@@ -2,6 +2,7 @@ package com.merahputihperkasa.prodigi.ui.screens
 
 import android.Manifest
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -107,9 +108,13 @@ fun SubmissionResultScreen(
         fun shareBitmapFromComposable() {
             if (writeStorageAccessState.allPermissionsGranted) {
                 scope.launch {
-                    val bitmap = graphicsLayer.toImageBitmap()
-                    val uri = bitmap.asAndroidBitmap().saveToDisk(context)
-                    shareBitmap(context, uri)
+                    try {
+                        val bitmap = graphicsLayer.toImageBitmap()
+                        val uri = bitmap.asAndroidBitmap().saveToDisk(context)
+                        shareBitmap(context, uri)
+                    } catch (e: Exception) {
+                        Log.e("Prodigi.SubmissionResult", "Error sharing bitmap: $e")
+                    }
                 }
             } else if (writeStorageAccessState.shouldShowRationale) {
                 scope.launch {
@@ -429,7 +434,7 @@ fun SheetEvaluationPreview(modifier: Modifier = Modifier) {
     val workSheet =
         WorkSheet("id", "uuid", "bookId", "title", "content", 10, List(10) { 1 }, List(10) { 1 })
     val submissionEntity = SubmissionEntity(
-        1, "name", "idNumber", "className", "schoolName", List(10) { 0 }, 7, 70, workSheet.uuid
+        1, "name", "numberId", "className", "schoolName", List(10) { 0 }, 7, 70, workSheet.uuid
     )
 
     SubmissionResultScreen(

@@ -234,7 +234,7 @@ fun SubmissionHistoryContent(
                         stringResource(
                             R.string.submission_card_desc,
                             submission.className,
-                            submission.idNumber
+                            submission.numberId
                         ),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Light,
