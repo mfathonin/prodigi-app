@@ -3,6 +3,7 @@ package com.merahputihperkasa.prodigi.ui.screens
 import android.Manifest
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -115,15 +116,29 @@ fun SubmissionResultScreen(
                         bitmap = graphicsLayer.toImageBitmap()
                         val uri = bitmap.asAndroidBitmap().saveToDisk(context)
                         shareBitmap(context, uri)
-                    } catch (e: IOException) {
-                        Log.e("Prodigi.SubmissionResult", "File operation error: $e")
-                    } catch (e: SecurityException) {
-                        Log.e("Prodigi.SubmissionResult", "Permission error: $e")
                     } catch (e: Exception) {
-                        Log.e("Prodigi.SubmissionResult", "Unexpected error: $e")
+                        val tag = "Prodigi.SubmissionResult"
+                        when (e) {
+                            is IOException -> {
+                                Log.e(tag, "File operation error: $e")
+                            }
+                            is SecurityException -> {
+                                Log.e(tag, "Permission error: $e")
+                            }
+                            else -> {
+                                Log.e(tag, "Unexpected error: $e")
+                            }
+                        }
+                        Toast.makeText(
+                            context,
+                            context.getString(
+                                R.string.general_error_msg,
+                                context.getString(R.string.submission_result_share_error_descriptor)
+                            ),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     } finally {
                         bitmap?.asAndroidBitmap()?.recycle()
-
                     }
                 }
             } else if (writeStorageAccessState.shouldShowRationale) {

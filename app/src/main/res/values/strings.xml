@@ -37,8 +37,13 @@
     <string name="submission_loading_save_label">Memproses lembar jawab</string>
     <string name="submission_result_greetings">Selamat Telah Menyelesaikan Lembar Kerja!</string>
     <string name="submission_result_correct_count_label">Jawaban Benar</string>
+    <string name="submission_result_share_error_descriptor">menyimpan gambar lembar jawab</string>
     <string name="submission_card_desc">Kelas %1$s | No. %2$s</string>
+    <string name="submission_history_title">Riwayat Lembar Kerja</string>
     <string name="submission_error_descriptor">riwayat lembar kerja.</string>
+
+    <string name="permission_request_storage_message">The storage permission is needed to save the image</string>
+    <string name="permission_request_storage_action_label">Grant Access</string>
 
     <string name="general_retry_button">Coba lagi</string>
     <string name="general_history_title">Riwayat</string>
@@ -49,7 +54,4 @@
     <string name="general_cancel_button_label">Batal</string>
     <string name="general_share_button">Bagikan</string>
     <string name="general_finish_button">Selesai</string>
-    <string name="submission_history_title">Riwayat Lembar Kerja</string>
-    <string name="permission_request_storage_message">The storage permission is needed to save the image</string>
-    <string name="permission_request_storage_action_label">Grant Access</string>
 </resources>
