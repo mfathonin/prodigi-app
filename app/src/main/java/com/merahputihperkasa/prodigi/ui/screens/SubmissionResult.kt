@@ -49,6 +49,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
@@ -82,6 +83,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import sv.lib.squircleshape.CornerSmoothing
 import sv.lib.squircleshape.SquircleShape
+import java.io.IOException
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -108,12 +110,20 @@ fun SubmissionResultScreen(
         fun shareBitmapFromComposable() {
             if (writeStorageAccessState.allPermissionsGranted) {
                 scope.launch {
+                    var bitmap: ImageBitmap? = null
                     try {
-                        val bitmap = graphicsLayer.toImageBitmap()
+                        bitmap = graphicsLayer.toImageBitmap()
                         val uri = bitmap.asAndroidBitmap().saveToDisk(context)
                         shareBitmap(context, uri)
+                    } catch (e: IOException) {
+                        Log.e("Prodigi.SubmissionResult", "File operation error: $e")
+                    } catch (e: SecurityException) {
+                        Log.e("Prodigi.SubmissionResult", "Permission error: $e")
                     } catch (e: Exception) {
-                        Log.e("Prodigi.SubmissionResult", "Error sharing bitmap: $e")
+                        Log.e("Prodigi.SubmissionResult", "Unexpected error: $e")
+                    } finally {
+                        bitmap?.asAndroidBitmap()?.recycle()
+
                     }
                 }
             } else if (writeStorageAccessState.shouldShowRationale) {
@@ -183,7 +193,6 @@ fun SubmissionResultScreen(
                 LoadingState()
                 return@Scaffold
             }
-
 
             // Decoration
             Box(

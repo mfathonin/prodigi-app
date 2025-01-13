@@ -130,9 +130,9 @@ fun SubmissionHistoryScreen(
                                 ?: return@CompositionLocalProvider
 
                             SubmissionHistoryContent(submissions, onNavigateToResult = { id, submission ->
-                                if (workSheetState.value.data == null) return@SubmissionHistoryContent
-
-                                onNavigateToResult(id, submission, workSheetState.value.data!!)
+                                workSheetState.value.data?.let { worksheetData ->
+                                    onNavigateToResult(id, submission, worksheetData)
+                                }
                             })
                         }
 
@@ -246,14 +246,20 @@ fun SubmissionHistoryContent(
     }
 }
 
+private const val TAG = "Prodigi.SubmissionHistories"
 suspend fun loadSubmissionHistory(
     worksheetUUID: String,
     submissions: MutableStateFlow<LoadDataStatus<List<SubmissionEntity>>>,
     repo: ProdigiRepositoryImpl
 ) {
-    repo.getSubmissionsHistories(worksheetUUID).collectLatest { data ->
-        submissions.update { data }
-        Log.i("Prodigi.SubmissionHistories", "[loadSubmissionHistory] Load Submission History for $worksheetUUID")
+    try {
+        repo.getSubmissionsHistories(worksheetUUID).collectLatest { data ->
+            submissions.update { data }
+            Log.i(TAG, "[loadSubmissionHistory] Load Submission History for $worksheetUUID")
+        }
+    } catch (e: Exception) {
+        Log.e(TAG, "[loadSubmissionHistory] Error loading submission history for $worksheetUUID", e)
+        submissions.update { LoadDataStatus.Error("$e") }
     }
 }
 

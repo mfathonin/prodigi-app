@@ -75,6 +75,7 @@ import com.merahputihperkasa.prodigi.ui.components.SubmitConfirmationDialog
 import com.merahputihperkasa.prodigi.ui.theme.ProdigiBookReaderTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.IOException
 
@@ -264,7 +265,14 @@ suspend fun loadSubmission(
     repo: ProdigiRepositoryImpl,
     stateFlow: MutableStateFlow<LoadDataStatus<Submission>>
 ) {
-    val submissionId = "$id".toInt(10)
+    val submissionId = try {
+        "$id".toInt(10)
+    } catch (e: NumberFormatException) {
+        Log.e("Prodigi.WorkSheet", "Invalid submission ID format: $id", e)
+        stateFlow.update { LoadDataStatus.Error("Invalid submission ID format: $id") }
+        return
+    }
+
     repo.getSubmissionById(submissionId).collect { submission ->
         Log.i("Prodigi.WorkSheet", "[load.submission.$submissionId] ${submission.data}")
         stateFlow.value = submission
