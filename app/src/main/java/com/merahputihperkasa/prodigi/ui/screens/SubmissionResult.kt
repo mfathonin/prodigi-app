@@ -187,24 +187,24 @@ fun SubmissionResultScreen(
             val submissionData = submissionState.data
             val worksheetData = worksheetState.data
 
-            if (submissionState is LoadDataStatus.Loading || worksheetState is LoadDataStatus.Loading) {
-                val repo = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
-                val lifecycleOwner = LocalLifecycleOwner.current
-                DisposableEffect(lifecycleOwner) {
-                    val observer = LifecycleEventObserver { _, event ->
-                        if (event == Lifecycle.Event.ON_RESUME) {
-                            scope.launch {
-                                loadSubmission(submissionId, repo, submissionEntityFlow)
-                                loadWorkSheet(workSheetUUID, repo, worksheetFlow)
-                            }
+            val repo = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
+            val lifecycleOwner = LocalLifecycleOwner.current
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_RESUME) {
+                        scope.launch {
+                            loadSubmission(submissionId, repo, submissionEntityFlow)
+                            loadWorkSheet(workSheetUUID, repo, worksheetFlow)
                         }
                     }
-                    lifecycleOwner.lifecycle.addObserver(observer)
-                    onDispose {
-                        lifecycleOwner.lifecycle.removeObserver(observer)
-                    }
                 }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
+                }
+            }
 
+            if (submissionState is LoadDataStatus.Loading || worksheetState is LoadDataStatus.Loading) {
                 LoadingState()
                 return@Scaffold
             }
