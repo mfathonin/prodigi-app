@@ -3,8 +3,9 @@ package com.merahputihperkasa.prodigi.repository.local.migrations
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-object Migration3To4: Migration(3, 4) {
+object Migration3To4 : Migration(3, 4) {
     override fun migrate(db: SupportSQLiteDatabase) {
+        // Create the `worksheets` table
         db.execSQL(
             """
             CREATE TABLE IF NOT EXISTS `worksheets` (
@@ -19,24 +20,33 @@ object Migration3To4: Migration(3, 4) {
                 `expiration_time` INTEGER NOT NULL,
                 `last_fetch_time` INTEGER NOT NULL
             );
-            
+            """
+        )
+
+        // Create the `submissions` table
+        db.execSQL(
+            """
             CREATE TABLE IF NOT EXISTS `submissions` (
-                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, /* Unique submission ID */
-                `worksheet_uuid` TEXT NOT NULL, /* Foreign key referencing worksheets table */
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                `worksheet_uuid` TEXT NOT NULL,
                 `name` TEXT NOT NULL,
                 `id_number` TEXT NOT NULL,
                 `class_name` TEXT NOT NULL,
                 `school_name` TEXT NOT NULL,
-                `answers` TEXT NOT NULL, /* Store answers as JSON array, e.g., "[1,2,3]" */
-                `correct_answers` INTEGER, /* Optional: Number of correct answers */
-                `total_points` INTEGER /* Optional: Total points earned */
+                `answers` TEXT NOT NULL,
+                `correct_answers` INTEGER,
+                `total_points` INTEGER,
+                FOREIGN KEY (`worksheet_uuid`) REFERENCES `worksheets`(`uuid`) 
+                    ON DELETE CASCADE
             );
-            
-            ALTER TABLE `submissions`
-            ADD CONSTRAINT `fk_submissions_worksheets`
-            FOREIGN KEY (`worksheet_uuid`)
-            REFERENCES `worksheets`(`uuid`)
-            ON DELETE CASCADE;
+            """
+        )
+
+        // Add the expected index on `worksheet_uuid`
+        db.execSQL(
+            """
+            CREATE INDEX IF NOT EXISTS `index_submissions_worksheet_uuid` 
+            ON `submissions` (`worksheet_uuid`);
             """
         )
     }
