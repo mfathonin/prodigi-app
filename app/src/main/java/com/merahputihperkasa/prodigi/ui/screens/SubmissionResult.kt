@@ -344,8 +344,10 @@ fun SubmissionResultScreen(
                             color = Color.White,
                             style = MaterialTheme.typography.bodyLarge
                         )
+
+                        val percentage = submissionData?.correctAnswers!!.toFloat() / worksheetData?.counts!!.toFloat() * 100
                         Text(
-                            "${submissionData?.totalPoints}",
+                            percentage.toString().substring(0, 4),
                             color = Color.White,
                             style = MaterialTheme.typography.displayMedium
                         )
