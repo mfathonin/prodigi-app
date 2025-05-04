@@ -9,6 +9,7 @@ import android.graphics.Bitmap
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
+import android.util.Log
 import androidx.room.TypeConverter
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
@@ -35,11 +36,16 @@ fun openUrl(context: Context, url: String) {
 class IntListConverter {
     @TypeConverter
     fun fromString(value: String): List<Int> {
+        Log.d("IntListConverter", "Value: $value")
         if (value.isEmpty()) {
             return emptyList()
         }
         return try {
-            value.split(",").map { it.trim().toInt() }
+            var str = value
+            if (value.startsWith("[") && value.endsWith("]")) {
+                str = value.substring(1, value.length - 1)
+            }
+            str.split(",").map { it.trim().toInt() }
         } catch (e: NumberFormatException) {
             throw IllegalArgumentException("Invalid integer format in the stored value", e)
         }
@@ -50,7 +56,7 @@ class IntListConverter {
         if (list.isEmpty()) {
             return ""
         }
-        return list.joinToString(",")
+        return "[${list.joinToString(",")}]"
     }
 }
 

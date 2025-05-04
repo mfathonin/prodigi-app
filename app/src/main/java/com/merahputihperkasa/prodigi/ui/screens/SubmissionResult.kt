@@ -458,7 +458,7 @@ fun SubmissionResultScreen(
 fun SheetEvaluationPreview(modifier: Modifier = Modifier) {
 
     val workSheet =
-        WorkSheet("id", "uuid", "bookId", "title", "content", 10, List(10) { 1 }, List(10) { 1 })
+        WorkSheet("id", "uuid", "bookId", "title", "content", 10, List(10) { 1 }, List(10) { 1 }, List(10) { 1 })
     val submissionEntity = SubmissionEntity(
         1, "name", "numberId", "className", "schoolName", List(10) { 0 }, 7, 70, workSheet.uuid
     )

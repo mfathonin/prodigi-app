@@ -16,6 +16,8 @@ data class WorkSheetsEntity (
     val points: List<Int>,
     @ColumnInfo(name = "n_options")
     val options: List<Int>,
+    @ColumnInfo(name = "modes")
+    val modes: List<Int>,
     @ColumnInfo(name = "book_title")
     val bookTitle: String? = null,
     @ColumnInfo(name = "content_title")
@@ -35,6 +37,7 @@ data class WorkSheetsEntity (
             bookTitle,
             contentTitle,
             counts,
+            modes,
             points,
             options
         )
@@ -50,6 +53,7 @@ data class WorkSheet (
     @SerializedName("contentTitle") val contentTitle: String? = null,
 
     @SerializedName("counts") val counts: Int,
+    @SerializedName("modes") val modes: List<Int>,
     @SerializedName("points") val points: List<Int>,
     @SerializedName("n_options") val options: List<Int>
 ) {
@@ -61,6 +65,7 @@ data class WorkSheet (
             bookTitle = bookTitle,
             contentTitle = contentTitle,
             counts = counts,
+            modes = modes,
             points = points,
             options = options,
             expirationTime = expirationTime

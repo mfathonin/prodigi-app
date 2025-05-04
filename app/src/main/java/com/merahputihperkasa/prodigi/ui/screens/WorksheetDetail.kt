@@ -390,7 +390,7 @@ fun WorksheetDetailPreview(modifier: Modifier = Modifier) {
         mutableStateOf(
             LoadDataStatus.Success(WorkSheet(
                 "id", "uuid", "bookId", "Book title", "content Title",
-                10, List(10) { 0 }, List(10) { 0 }
+                10, List(10) { 0 }, List(10) { 0 }, List(10) { 0 }
             ))
         )
     }

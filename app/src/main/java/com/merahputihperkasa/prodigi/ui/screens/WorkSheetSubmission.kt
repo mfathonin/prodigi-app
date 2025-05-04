@@ -615,6 +615,7 @@ fun WorkSheetSubmissionPreview() {
             bookTitle = "Sample Book Title",
             contentTitle = "Sample Content Title",
             counts = 4,
+            modes = List(4) { 0},
             options = listOf(4,4,3,5),
             points = List(4) { 5 }
         )

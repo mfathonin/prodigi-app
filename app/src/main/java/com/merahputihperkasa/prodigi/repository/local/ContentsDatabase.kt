@@ -14,7 +14,7 @@ import com.merahputihperkasa.prodigi.utils.IntListConverter
     BannerItemEntity::class,
     WorkSheetsEntity::class,
     SubmissionEntity::class
- ], version = 4)
+], version = 5)
 @TypeConverters(IntListConverter::class)
 abstract class ContentsDatabase: RoomDatabase() {
     abstract val contentsDao: ContentsDao
