@@ -88,37 +88,18 @@ class AnswerListConverter {
     fun fromString(value: String): List<Answer> {
         return try {
             val parsedList: List<Any?> = gson.fromJson(value, listType)
-            parsedList.mapNotNull { item ->
+            parsedList.map { item ->
                 when (item) {
-                    // Gson might parse numbers as Double, handle this
-                    is Number -> {
-                        val intValue = item.toInt()
-                        if (intValue == -1) Answer.None else Answer.Single(intValue)
-                    }
-                    // Gson might parse list elements as Double
+                    is Number -> if (item.toInt() == -1) Answer.None else Answer.Single(
+                        item.toInt()
+                    )
+
                     is List<*> -> {
-                        val intList = item.mapNotNull { listItem ->
-                            (listItem as? Number)?.toInt()
-                        }
-                        // Ensure the list wasn't just empty or full of non-numbers
-                        if (item.isNotEmpty() && intList.size == item.size) {
-                            Answer.Multiple(intList)
-                        } else {
-                            Log.w(
-                                "AnswerListConverter",
-                                "Could not parse list item: $item"
-                            )
-                            null // Or throw an exception if invalid lists are critical errors
-                        }
+                        val ints = item.mapNotNull { (it as? Number)?.toInt() }
+                        if (ints.isEmpty()) Answer.None else Answer.Multiple(ints)
                     }
 
-                    else -> {
-                        Log.w(
-                            "AnswerListConverter",
-                            "Unexpected type in JSON list: ${item?.javaClass?.name}"
-                        )
-                        null // Or throw an exception
-                    }
+                    else -> Answer.None
                 }
             }
         } catch (e: Exception) {

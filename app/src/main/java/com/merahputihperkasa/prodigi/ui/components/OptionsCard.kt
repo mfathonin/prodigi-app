@@ -160,7 +160,7 @@ fun OptionsCard(
                     onClick = {
                         answers.value = answers.value.toMutableList().apply {
                             if (modes == 1) {
-                                val answersVal = answers.value[index]
+                                val answersVal = answers.value.getOrNull(index) ?: Answer.None
                                 if (answersVal is Answer.None) {
                                     removeAt(index)
                                     add(index, Answer.Multiple(listOf(ops)))
@@ -168,6 +168,7 @@ fun OptionsCard(
                                     val oldAnswer = answersVal.answers
                                     if (ops in oldAnswer) {
                                         if (oldAnswer.size == 1) return@apply
+
                                         removeAt(index)
                                         add(index, Answer.Multiple(oldAnswer - ops))
                                         return@apply

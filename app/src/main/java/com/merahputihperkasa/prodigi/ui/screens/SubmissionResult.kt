@@ -359,10 +359,14 @@ fun SubmissionResultScreen(
                         )
 
                         val percentage =
-                            submissionData?.correctAnswers!!.toDouble() / worksheetData?.counts!!.toDouble() * 100
+                            submissionData?.correctAnswers?.let { correctAnswers ->
+                                worksheetData?.counts?.let { counts ->
+                                    correctAnswers.toDouble() / counts.toDouble() * 100
+                                }
+                            } ?: 0.0
 
                         val bigDecimal = percentage.toBigDecimal().setScale(
-                            2,
+                            percentage.let { if (it < 100) 2 else 0 },
                             RoundingMode.HALF_UP,
                         )
 
@@ -388,7 +392,11 @@ fun SubmissionResultScreen(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            "${submissionData.correctAnswers} / ${worksheetData.counts}",
+                            text = submissionData?.let { subs ->
+                                worksheetData?.let { ws ->
+                                    "${subs.correctAnswers} / ${ws.counts}"
+                                }
+                            } ?: "- / -",
                             color = Color.White
                         )
                         Text(

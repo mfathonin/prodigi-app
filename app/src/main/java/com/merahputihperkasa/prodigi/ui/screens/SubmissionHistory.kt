@@ -207,7 +207,8 @@ fun SubmissionHistoryContent(
                         val percentage = submission.correctAnswers!!.toDouble() /
                                 counts.toDouble() * 100
                         val str = percentage.toBigDecimal().setScale(
-                            1, RoundingMode.HALF_UP
+                            percentage.let { if (it < 100) 1 else 0 },
+                            RoundingMode.HALF_UP,
                         ).toString()
 
                         Text(
