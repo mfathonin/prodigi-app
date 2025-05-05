@@ -1,6 +1,7 @@
 package com.merahputihperkasa.prodigi.ui.screens
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -69,10 +70,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.merahputihperkasa.prodigi.MainActivity
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.merahputihperkasa.prodigi.MainActivity
 import com.merahputihperkasa.prodigi.ProdigiApp
 import com.merahputihperkasa.prodigi.R
+import com.merahputihperkasa.prodigi.models.Answer
 import com.merahputihperkasa.prodigi.models.SubmissionEntity
 import com.merahputihperkasa.prodigi.models.WorkSheet
 import com.merahputihperkasa.prodigi.repository.LoadDataStatus
@@ -85,7 +87,9 @@ import kotlinx.coroutines.launch
 import sv.lib.squircleshape.CornerSmoothing
 import sv.lib.squircleshape.SquircleShape
 import java.io.IOException
+import java.math.RoundingMode
 
+@SuppressLint("DefaultLocale")
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun SubmissionResultScreen(
@@ -108,6 +112,7 @@ fun SubmissionResultScreen(
                 listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             }
         )
+
         fun shareBitmapFromComposable() {
             if (writeStorageAccessState.allPermissionsGranted) {
                 scope.launch {
@@ -122,9 +127,11 @@ fun SubmissionResultScreen(
                             is IOException -> {
                                 Log.e(tag, "File operation error: $e")
                             }
+
                             is SecurityException -> {
                                 Log.e(tag, "Permission error: $e")
                             }
+
                             else -> {
                                 Log.e(tag, "Unexpected error: $e")
                             }
@@ -173,15 +180,19 @@ fun SubmissionResultScreen(
             val screenHeight = LocalConfiguration.current.screenHeightDp.dp
             val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
-            val submissionEntityFlow = remember { MutableStateFlow(
-                if (submissionEntity != null)
-                    LoadDataStatus.Success(submissionEntity.toSubmission())
-                else LoadDataStatus.Loading()
-            )}
-            val worksheetFlow = remember { MutableStateFlow(
-                if (workSheet != null) LoadDataStatus.Success(workSheet)
-                else LoadDataStatus.Loading()
-            )}
+            val submissionEntityFlow = remember {
+                MutableStateFlow(
+                    if (submissionEntity != null)
+                        LoadDataStatus.Success(submissionEntity.toSubmission())
+                    else LoadDataStatus.Loading()
+                )
+            }
+            val worksheetFlow = remember {
+                MutableStateFlow(
+                    if (workSheet != null) LoadDataStatus.Success(workSheet)
+                    else LoadDataStatus.Loading()
+                )
+            }
             val submissionState = submissionEntityFlow.collectAsState().value
             val worksheetState = worksheetFlow.collectAsState().value
             val submissionData = submissionState.data
@@ -318,10 +329,12 @@ fun SubmissionResultScreen(
                     Column(
                         Modifier
                             .fillMaxWidth()
-                            .padding(top = 20.dp), horizontalAlignment = Alignment.CenterHorizontally
+                            .padding(top = 20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            "${worksheetData?.bookTitle}", style = MaterialTheme.typography.bodySmall
+                            "${worksheetData?.bookTitle}",
+                            style = MaterialTheme.typography.bodySmall
                         )
                         Text(
                             "${worksheetData?.contentTitle}",
@@ -345,9 +358,16 @@ fun SubmissionResultScreen(
                             style = MaterialTheme.typography.bodyLarge
                         )
 
-                        val percentage = submissionData?.correctAnswers!!.toFloat() / worksheetData?.counts!!.toFloat() * 100
+                        val percentage =
+                            submissionData?.correctAnswers!!.toDouble() / worksheetData?.counts!!.toDouble() * 100
+
+                        val bigDecimal = percentage.toBigDecimal().setScale(
+                            2,
+                            RoundingMode.HALF_UP,
+                        )
+
                         Text(
-                            percentage.toString().substring(0, 4),
+                            bigDecimal.toString(),
                             color = Color.White,
                             style = MaterialTheme.typography.displayMedium
                         )
@@ -368,7 +388,7 @@ fun SubmissionResultScreen(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            "${submissionData?.correctAnswers} / ${worksheetData?.counts}",
+                            "${submissionData.correctAnswers} / ${worksheetData.counts}",
                             color = Color.White
                         )
                         Text(
@@ -382,7 +402,8 @@ fun SubmissionResultScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         val profile = submissionData?.profile
                         Text(
-                            "${profile?.name}", style = MaterialTheme.typography.headlineSmall
+                            "${profile?.name}",
+                            style = MaterialTheme.typography.headlineSmall
                         )
                         Text(
                             "${profile?.schoolName} | ${profile?.className} |  ${profile?.numberId}",
@@ -457,14 +478,33 @@ fun SubmissionResultScreen(
 @Composable
 fun SheetEvaluationPreview(modifier: Modifier = Modifier) {
 
-    val workSheet =
-        WorkSheet("id", "uuid", "bookId", "title", "content", 10, List(10) { 1 }, List(10) { 1 }, List(10) { 1 })
+    val workSheet = WorkSheet(
+        "id",
+        "uuid",
+        "bookId",
+        "title",
+        "content",
+        10,
+        List(10) { 1 },
+        List(10) { 1 },
+        List(10) { 1 },
+    )
     val submissionEntity = SubmissionEntity(
-        1, "name", "numberId", "className", "schoolName", List(10) { 0 }, 7, 70, workSheet.uuid
+        1,
+        "name",
+        "numberId",
+        "className",
+        "schoolName",
+        List(10) { Answer.Single(0) },
+        7,
+        70,
+        workSheet.uuid,
     )
 
     SubmissionResultScreen(
-        0, "id",
-        submissionEntity = submissionEntity, workSheet = workSheet
+        0,
+        "id",
+        submissionEntity = submissionEntity,
+        workSheet = workSheet,
     )
 }

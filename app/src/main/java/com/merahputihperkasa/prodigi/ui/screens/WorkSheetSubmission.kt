@@ -65,6 +65,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.merahputihperkasa.prodigi.MainActivity
 import com.merahputihperkasa.prodigi.ProdigiApp
 import com.merahputihperkasa.prodigi.R
+import com.merahputihperkasa.prodigi.models.Answer
 import com.merahputihperkasa.prodigi.models.Profile
 import com.merahputihperkasa.prodigi.models.Submission
 import com.merahputihperkasa.prodigi.models.WorkSheet
@@ -84,7 +85,7 @@ import java.io.IOException
 fun WorkSheetSubmissionScreen(
     id: Int, workSheetId: String,
     workSheetData: WorkSheet? = null,
-    onEvaluateSuccess: (id: Int?, submission: Submission?) -> Unit
+    onEvaluateSuccess: (id: Int?, submission: Submission?) -> Unit,
 ) {
     val context = LocalContext.current
     val repo = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
@@ -135,9 +136,15 @@ fun WorkSheetSubmissionScreen(
                             .background(
                                 brush = Brush.verticalGradient(
                                     listOf(
-                                        MaterialTheme.colorScheme.inverseSurface.copy(alpha = .85f),
-                                        MaterialTheme.colorScheme.inverseSurface.copy(alpha = .65f),
-                                        MaterialTheme.colorScheme.inverseSurface.copy(alpha = .9f)
+                                        MaterialTheme.colorScheme.inverseSurface.copy(
+                                            alpha = .85f
+                                        ),
+                                        MaterialTheme.colorScheme.inverseSurface.copy(
+                                            alpha = .65f
+                                        ),
+                                        MaterialTheme.colorScheme.inverseSurface.copy(
+                                            alpha = .9f
+                                        )
                                     )
                                 )
                             )
@@ -151,7 +158,9 @@ fun WorkSheetSubmissionScreen(
                         )
                         Text(
                             stringResource(R.string.submission_loading_save_label),
-                            modifier = Modifier.padding(8.dp).padding(top = 10.dp),
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .padding(top = 10.dp),
                             color = MaterialTheme.colorScheme.inverseOnSurface
                         )
                     }
@@ -165,8 +174,11 @@ fun WorkSheetSubmissionScreen(
                         (context as MainActivity).finish()
                     } else {
                         Toast
-                            .makeText(context,
-                                context.getString(R.string.general_press_again_to_exit), Toast.LENGTH_SHORT)
+                            .makeText(
+                                context,
+                                context.getString(R.string.general_press_again_to_exit),
+                                Toast.LENGTH_SHORT
+                            )
                             .show()
                     }
                     lastBackPressTime.longValue = System.currentTimeMillis()
@@ -252,18 +264,19 @@ fun WorkSheetSubmissionScreen(
 suspend fun loadWorkSheet(
     workSheetId: String,
     repo: ProdigiRepositoryImpl,
-    stateFlow: MutableStateFlow<LoadDataStatus<WorkSheet>>
+    stateFlow: MutableStateFlow<LoadDataStatus<WorkSheet>>,
 ) {
-    repo.getWorkSheetConfig(workSheetId, false, byPassInitialLoading = true).collect { conf ->
-        Log.i("Prodigi.WorkSheet", "[load.workSheet.$workSheetId] ${conf.data}")
-        stateFlow.value = conf
-    }
+    repo.getWorkSheetConfig(workSheetId, false, byPassInitialLoading = true)
+        .collect { conf ->
+            Log.i("Prodigi.WorkSheet", "[load.workSheet.$workSheetId] ${conf.data}")
+            stateFlow.value = conf
+        }
 }
 
 suspend fun loadSubmission(
     id: Int,
     repo: ProdigiRepositoryImpl,
-    stateFlow: MutableStateFlow<LoadDataStatus<Submission>>
+    stateFlow: MutableStateFlow<LoadDataStatus<Submission>>,
 ) {
     val submissionId = try {
         "$id".toInt(10)
@@ -283,8 +296,8 @@ suspend fun saveAnswers(
     submissionId: Int?,
     workSheet: WorkSheet,
     submission: Submission,
-    answers: List<Int>,
-    repo: ProdigiRepositoryImpl
+    answers: List<Answer>,
+    repo: ProdigiRepositoryImpl,
 ) {
     // cap the answer to worksheet.counts
     val cleanAnswers = answers.take(workSheet.counts)
@@ -303,8 +316,8 @@ suspend fun submitAnswer(
     submissionId: Int,
     workSheet: WorkSheet,
     submission: Submission,
-    answers: List<Int>,
-    repo: ProdigiRepositoryImpl
+    answers: List<Answer>,
+    repo: ProdigiRepositoryImpl,
 ): Result<Submission> {
     val cleanAnswers = answers.take(workSheet.counts)
     return try {
@@ -326,8 +339,8 @@ fun WorkSheetSubmissionContent(
     workSheetState: State<LoadDataStatus<WorkSheet>>,
     submission: State<LoadDataStatus<Submission>>,
     modifier: Modifier = Modifier,
-    onSave: (answers: List<Int>, callback: () -> Unit) -> Unit,
-    onSubmit: (answers: List<Int>) -> Unit = {}
+    onSave: (answers: List<Answer>, callback: () -> Unit) -> Unit,
+    onSubmit: (answers: List<Answer>) -> Unit = {},
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
@@ -342,10 +355,12 @@ fun WorkSheetSubmissionContent(
             val workSheet by remember { derivedStateOf { workSheetState.value.data } }
             val count by remember { derivedStateOf { workSheet?.counts } }
             val options by remember { derivedStateOf { workSheet?.options } }
-            val answers = remember { mutableStateOf(List(0) { -1 }) }
+            val modes by remember { derivedStateOf { workSheet?.modes } }
+            val answers =
+                remember { mutableStateOf<List<Answer>>(List(0) { Answer.None }) }
             val isFinished by remember {
                 derivedStateOf {
-                    answers.value.filter { it != -1 }.size == count
+                    answers.value.filter { it != Answer.None }.size == count
                 }
             }
             val isAnswersNotSave = remember { mutableStateOf(false) }
@@ -360,7 +375,7 @@ fun WorkSheetSubmissionContent(
             )
 
             if (answers.value.size != count) {
-                answers.value = List(count ?: 0) { -1 }
+                answers.value = List(count ?: 0) { Answer.None }
             }
 
             LaunchedEffect(key1 = submission.value) {
@@ -431,7 +446,9 @@ fun WorkSheetSubmissionContent(
             ) {
                 if (submission.value is LoadDataStatus.Loading) {
                     Column(
-                        Modifier.padding(top = 30.dp).fillMaxWidth(),
+                        Modifier
+                            .padding(top = 30.dp)
+                            .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         LoadingState()
@@ -443,6 +460,7 @@ fun WorkSheetSubmissionContent(
                                 answers = answers,
                                 option = optionsItems[index],
                                 index = index,
+                                modes = modes?.get(index) ?: 0,
                             ) {
                                 isAnswersNotSave.value = true
                             }
@@ -458,7 +476,9 @@ fun WorkSheetSubmissionContent(
                                             Brush.horizontalGradient(
                                                 listOf(
                                                     Color.Transparent,
-                                                    MaterialTheme.colorScheme.onSurface.copy(alpha = .1f),
+                                                    MaterialTheme.colorScheme.onSurface.copy(
+                                                        alpha = .1f
+                                                    ),
                                                     Color.Transparent
                                                 )
                                             )
@@ -499,7 +519,7 @@ fun WorkSheetSubmissionContent(
                     Text(
                         stringResource(
                             R.string.worksheet_button_finish,
-                            answers.value.filter { it >= 0 }.size,
+                            answers.value.filter { it != Answer.None }.size,
                             count ?: 0
                         )
                     )
@@ -525,7 +545,8 @@ fun WorkSheetSubmissionContent(
                     Box(
                         Modifier
                             .size(32.dp)
-                            .padding(7.dp)) {
+                            .padding(7.dp)
+                    ) {
                         Icon(
                             painter = painterResource(R.drawable.save),
                             "Share Button",
@@ -560,7 +581,11 @@ fun WorkSheetSubmissionContent(
                                     Log.i("Prodigi.Worksheet", "Auto-save successful")
                                 }
                             } catch (e: Exception) {
-                                Log.e("Prodigi.Worksheet", "Failed to auto-save answers", e)
+                                Log.e(
+                                    "Prodigi.Worksheet",
+                                    "Failed to auto-save answers",
+                                    e
+                                )
                             }
                         }
                     }
@@ -615,15 +640,15 @@ fun WorkSheetSubmissionPreview() {
             bookTitle = "Sample Book Title",
             contentTitle = "Sample Content Title",
             counts = 4,
-            modes = List(4) { 0},
-            options = listOf(4,4,3,5),
+            modes = List(4) { 0 },
+            options = listOf(4, 4, 3, 5),
             points = List(4) { 5 }
         )
     )).collectAsState()
     val submission = MutableStateFlow(LoadDataStatus.Success(
         Submission(
             profile = Profile("name", "13", "claasName", "SchoolName"),
-            answers = List(10) { -1 }
+            answers = List(10) { Answer.None }
         )
     )).collectAsState()
     WorkSheetSubmissionContent(
