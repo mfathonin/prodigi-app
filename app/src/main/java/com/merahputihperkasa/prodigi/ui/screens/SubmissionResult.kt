@@ -1,7 +1,6 @@
 package com.merahputihperkasa.prodigi.ui.screens
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -89,7 +88,6 @@ import sv.lib.squircleshape.SquircleShape
 import java.io.IOException
 import java.math.RoundingMode
 
-@SuppressLint("DefaultLocale")
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun SubmissionResultScreen(

@@ -104,8 +104,7 @@ fun OptionsCard(
                     OutlinedIconButton(
                         onClick = {
                             answers.value = answers.value.toMutableList().apply {
-                                removeAt(index)
-                                add(index, Answer.None)
+                                this[index] = Answer.None
                             }
                             onChanged.invoke()
                         },
@@ -135,11 +134,11 @@ fun OptionsCard(
             horizontalArrangement = Arrangement.spacedBy(5.dp),
         ) {
             for (ops in 0..<option) {
-                var isSelected = false
-                if (selectedOption is Answer.Single && (selectedOption as Answer.Single).answer == ops)
-                    isSelected = true
-                if (selectedOption is Answer.Multiple && ops in (selectedOption as Answer.Multiple).answers)
-                    isSelected = true
+                val isSelected = when (selectedOption) {
+                    is Answer.Single -> (selectedOption as Answer.Single).answer == ops
+                    is Answer.Multiple -> ops in (selectedOption as Answer.Multiple).answers
+                    else -> false
+                }
 
                 val colors = if (isSelected) {
                     ButtonDefaults.buttonColors()
@@ -160,7 +159,8 @@ fun OptionsCard(
                     onClick = {
                         answers.value = answers.value.toMutableList().apply {
                             if (modes == 1) {
-                                val answersVal = answers.value.getOrNull(index) ?: Answer.None
+                                val answersVal =
+                                    answers.value.getOrNull(index) ?: Answer.None
                                 if (answersVal is Answer.None) {
                                     removeAt(index)
                                     add(index, Answer.Multiple(listOf(ops)))
@@ -184,7 +184,7 @@ fun OptionsCard(
                             }
                         }
                         onChanged.invoke()
-                        Log.i("Prodigi.OptionsCard", "answers: $answers")
+                        Log.i("Prodigi.OptionsCard", "answers: ${answers.value}")
                     },
                     modifier = Modifier
                         .fillMaxWidth()

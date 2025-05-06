@@ -9,7 +9,6 @@ import android.graphics.Bitmap
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
-import android.util.Log
 import androidx.room.TypeConverter
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
@@ -36,7 +35,6 @@ fun openUrl(context: Context, url: String) {
 class IntListConverter {
     @TypeConverter
     fun fromString(value: String): List<Int> {
-        Log.d("IntListConverter", "Value: $value")
         if (value.isEmpty()) {
             return emptyList()
         }
@@ -76,7 +74,7 @@ suspend fun Bitmap.saveToDisk(context: Context): Uri {
 
 /**
  * We call [MediaScannerConnection] to index the newly created image inside MediaStore to be visible
- * for other apps, as well as returning its [MediaStore] Uri
+ * for other apps, as well as returning its Uri in [MediaScannerConnection.OnScanCompletedListener.onScanCompleted]
  */
 suspend fun scanFilePath(context: Context, filePath: String): Uri? {
     return suspendCancellableCoroutine { continuation ->

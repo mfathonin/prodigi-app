@@ -155,7 +155,7 @@ data class Submission(
             answers = answers.map { answer ->
                 when (answer) {
                     is Answer.Single -> answer.answer
-                    is Answer.Multiple -> answer.answers
+                    is Answer.Multiple -> answer.answers.distinct().sorted()
                     is Answer.None -> -1
                 }
             }
