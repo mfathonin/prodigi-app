@@ -55,4 +55,5 @@
     <string name="general_cancel_button_label">Batal</string>
     <string name="general_share_button">Bagikan</string>
     <string name="general_finish_button">Selesai</string>
+    <string name="general_copied_to_clipboard">Konten disalin</string>
 </resources>

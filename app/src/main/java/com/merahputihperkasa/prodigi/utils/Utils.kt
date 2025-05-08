@@ -1,5 +1,6 @@
 package com.merahputihperkasa.prodigi.utils
 
+import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -9,7 +10,9 @@ import android.graphics.Bitmap
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
+import android.widget.Toast
 import androidx.room.TypeConverter
+import com.merahputihperkasa.prodigi.R
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
 import java.io.IOException
@@ -22,14 +25,26 @@ fun isValidURi(uri: String): Boolean {
 }
 
 fun copyToClipboard(context: Context, text: String) {
-    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clipboard = context.getSystemService(
+        Context.CLIPBOARD_SERVICE
+    ) as ClipboardManager
     val clip = ClipData.newPlainText(text, text)
     clipboard.setPrimaryClip(clip)
 }
 
 fun openUrl(context: Context, url: String) {
     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-    context.startActivity(intent)
+    try {
+        context.startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        copyToClipboard(context, url)
+        
+        Toast.makeText(
+            context,
+            context.getString(R.string.general_copied_to_clipboard),
+            Toast.LENGTH_SHORT,
+        ).show()
+    }
 }
 
 class IntListConverter {
@@ -45,7 +60,10 @@ class IntListConverter {
             }
             str.split(",").map { it.trim().toInt() }
         } catch (e: NumberFormatException) {
-            throw IllegalArgumentException("Invalid integer format in the stored value", e)
+            throw IllegalArgumentException(
+                "Invalid integer format in the stored value",
+                e
+            )
         }
     }
 
