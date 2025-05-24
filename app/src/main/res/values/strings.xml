@@ -21,6 +21,7 @@
     <string name="worksheet_start_button_label">Mulai mengerjakan</string>
     <string name="worksheet_button_finish">Selesai (%1$s / %2$s)</string>
     <string name="worksheet_clear_answer">Hapus</string>
+    <string name="worksheet_choose_more_than_one">Pilih lebih dari satu</string>
     <string name="worksheet_submit_button_label">Kirim</string>
     <string name="worksheet_confirmation_title">Mengirim Lembar Jawab</string>
     <string name="worksheet_confirmation_desc">Apakah anda yakin ingin mengirim lembar jawab ini?</string>
@@ -54,4 +55,5 @@
     <string name="general_cancel_button_label">Batal</string>
     <string name="general_share_button">Bagikan</string>
     <string name="general_finish_button">Selesai</string>
+    <string name="general_copied_to_clipboard">Konten disalin</string>
 </resources>

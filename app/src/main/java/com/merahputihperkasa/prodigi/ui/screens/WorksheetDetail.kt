@@ -55,6 +55,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.merahputihperkasa.prodigi.ProdigiApp
 import com.merahputihperkasa.prodigi.R
+import com.merahputihperkasa.prodigi.models.Answer
 import com.merahputihperkasa.prodigi.models.Profile
 import com.merahputihperkasa.prodigi.models.SubmissionEntity
 import com.merahputihperkasa.prodigi.models.WorkSheet
@@ -74,14 +75,17 @@ import sv.lib.squircleshape.SquircleShape
 fun WorkSheetDetailScreen(
     workSheetUUID: String,
     onNavigateStart: (id: Int, worksheetId: String, workSheet: WorkSheet) -> Unit,
-    onNavigateToHistories: (worksheetData: WorkSheet) -> Unit
+    onNavigateToHistories: (worksheetData: WorkSheet) -> Unit,
 ) {
     ProdigiBookReaderTheme {
         val scrollState = rememberScrollState()
         val keyboardHeight = WindowInsets.ime.getBottom(LocalDensity.current)
 
         LaunchedEffect(key1 = keyboardHeight) {
-            Log.i("Prodigi.Worksheet", "[scroll.to.end] $keyboardHeight ${scrollState.maxValue}")
+            Log.i(
+                "Prodigi.Worksheet",
+                "[scroll.to.end] $keyboardHeight ${scrollState.maxValue}"
+            )
             scrollState.animateScrollBy(keyboardHeight.toFloat() * 3f / 5)
         }
 
@@ -101,7 +105,8 @@ fun WorkSheetDetailScreen(
 
         val workSheetConf = workSheetConfFlow.collectAsState()
         val submissionEntity = submissionEntityFlow.collectAsState()
-        val submissionCount: Int = submissionHistoriesFlow.collectAsState().value.data?.size ?: 0
+        val submissionCount: Int =
+            submissionHistoriesFlow.collectAsState().value.data?.size ?: 0
 
         val lifecycleOwner = LocalLifecycleOwner.current
         DisposableEffect(key1 = lifecycleOwner) {
@@ -109,8 +114,16 @@ fun WorkSheetDetailScreen(
                 if (event == Lifecycle.Event.ON_RESUME) {
                     scope.launch {
                         loadWorkSheetByUUID(workSheetUUID, repo, workSheetConfFlow)
-                        loadSubmissionByWorkSheetId(workSheetUUID, repo, submissionEntityFlow)
-                        loadSubmissionHistory(workSheetUUID, submissionHistoriesFlow, repo)
+                        loadSubmissionByWorkSheetId(
+                            workSheetUUID,
+                            repo,
+                            submissionEntityFlow
+                        )
+                        loadSubmissionHistory(
+                            workSheetUUID,
+                            submissionHistoriesFlow,
+                            repo
+                        )
                     }
                 }
             }
@@ -143,8 +156,10 @@ fun WorkSheetDetailScreen(
                         workSheetConf,
                         submissionEntity
                     ) {
-                        val workSheet = (workSheetConf.value as LoadDataStatus.Success).data
-                        val submission = (submissionEntity.value as LoadDataStatus.Success).data
+                        val workSheet =
+                            (workSheetConf.value as LoadDataStatus.Success).data
+                        val submission =
+                            (submissionEntity.value as LoadDataStatus.Success).data
 
                         if (workSheet != null) {
                             WorkSheetHeader(workSheet)
@@ -162,7 +177,11 @@ fun WorkSheetDetailScreen(
                                         handleSubmitProfile(
                                             repo, workSheet, profile, submission
                                         ) { id ->
-                                            onNavigateStart.invoke(id, workSheet.uuid, workSheet)
+                                            onNavigateStart.invoke(
+                                                id,
+                                                workSheet.uuid,
+                                                workSheet
+                                            )
                                         }
                                     }
                                 },
@@ -207,7 +226,7 @@ fun WorksheetDetailContent(
                     ),
                 Arrangement.Center,
                 Alignment.CenterHorizontally
-            ){
+            ) {
                 Icon(
                     painterResource(R.mipmap.ic_logo),
                     "Logo Prodigi",
@@ -256,12 +275,17 @@ fun WorksheetDetailContent(
 @Composable
 fun WorkSheetHeader(workSheet: WorkSheet) {
     val borderContainer = SquircleShape(28.dp, CornerSmoothing.Medium)
-    val border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceTint.copy(alpha = .4f))
+    val border =
+        BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceTint.copy(alpha = .4f))
 
     Column(
         Modifier
             .border(border, borderContainer)
-            .shadow(2.dp, borderContainer, spotColor = MaterialTheme.colorScheme.surfaceDim)
+            .shadow(
+                2.dp,
+                borderContainer,
+                spotColor = MaterialTheme.colorScheme.surfaceDim
+            )
             .background(MaterialTheme.colorScheme.primary, borderContainer)
             .padding(vertical = 10.dp, horizontal = 15.dp)
     ) {
@@ -304,7 +328,7 @@ fun WorkSheetHeader(workSheet: WorkSheet) {
                 )
             }
         }
-        Row (
+        Row(
             Modifier
                 .padding(bottom = 5.dp)
                 .background(
@@ -341,7 +365,7 @@ suspend fun handleSubmitProfile(
     workSheet: WorkSheet,
     profile: Profile,
     submissionEntity: SubmissionEntity? = null,
-    onSubmitted: (id: Int) -> Unit = {}
+    onSubmitted: (id: Int) -> Unit = {},
 ) {
     val workSheetId = workSheet.uuid
     val count = workSheet.counts
@@ -353,20 +377,23 @@ suspend fun handleSubmitProfile(
         val id = repo.upsertSubmission(
             id = submissionEntity?.id, workSheetId,
             profile.name, profile.numberId, profile.className, profile.schoolName,
-            answers = answers ?: List(count) { -1 }
+            answers = answers ?: List(count) { Answer.None }
         )
 
         // Navigate to the next screen
         onSubmitted.invoke(submissionEntity?.id ?: id)
     } catch (e: Exception) {
-        Log.e("Prodigi.Profile", "[handleSubmitProfile] error on upsert submission $e, $submission")
+        Log.e(
+            "Prodigi.Profile",
+            "[handleSubmitProfile] error on upsert submission $e, $submission"
+        )
     }
 }
 
 private suspend fun loadWorkSheetByUUID(
     uuid: String,
     repo: ProdigiRepositoryImpl,
-    stateFlow: MutableStateFlow<LoadDataStatus<WorkSheet>>
+    stateFlow: MutableStateFlow<LoadDataStatus<WorkSheet>>,
 ) {
     repo.getWorkSheetConfig(uuid, true).collectLatest { workSheetData ->
         stateFlow.update { workSheetData }
@@ -376,7 +403,7 @@ private suspend fun loadWorkSheetByUUID(
 private suspend fun loadSubmissionByWorkSheetId(
     worksheetId: String,
     repo: ProdigiRepositoryImpl,
-    stateFlow: MutableStateFlow<LoadDataStatus<SubmissionEntity?>>
+    stateFlow: MutableStateFlow<LoadDataStatus<SubmissionEntity?>>,
 ) {
     repo.getSubmissionOnWorkSheetId(worksheetId).collectLatest { submissionData ->
         stateFlow.update { submissionData }
@@ -390,7 +417,7 @@ fun WorksheetDetailPreview(modifier: Modifier = Modifier) {
         mutableStateOf(
             LoadDataStatus.Success(WorkSheet(
                 "id", "uuid", "bookId", "Book title", "content Title",
-                10, List(10) { 0 }, List(10) { 0 }
+                10, List(10) { 0 }, List(10) { 0 }, List(10) { 0 }
             ))
         )
     }

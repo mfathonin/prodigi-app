@@ -49,6 +49,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.merahputihperkasa.prodigi.ProdigiApp
 import com.merahputihperkasa.prodigi.R
+import com.merahputihperkasa.prodigi.models.Answer
 import com.merahputihperkasa.prodigi.models.SubmissionEntity
 import com.merahputihperkasa.prodigi.models.WorkSheet
 import com.merahputihperkasa.prodigi.repository.LoadDataStatus
@@ -58,6 +59,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.math.RoundingMode
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -65,17 +67,22 @@ fun SubmissionHistoryScreen(
     workSheetUUID: String,
     workSheet: WorkSheet? = null,
     onNavigateToResult: (
-        submissionId: Int, submissionEntity: SubmissionEntity, worksheetData: WorkSheet
+        submissionId: Int, submissionEntity: SubmissionEntity, worksheetData: WorkSheet,
     ) -> Unit = { _, _, _ -> },
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val repo = ProdigiRepositoryImpl(ProdigiApp.appModule, context)
 
-    val workSheetFlow = remember { MutableStateFlow(
-        if (workSheet != null) { LoadDataStatus.Success(workSheet)}
-        else { LoadDataStatus.Loading() }
-    )}
+    val workSheetFlow = remember {
+        MutableStateFlow(
+            if (workSheet != null) {
+                LoadDataStatus.Success(workSheet)
+            } else {
+                LoadDataStatus.Loading()
+            }
+        )
+    }
     val submissionsFlow = remember {
         MutableStateFlow<LoadDataStatus<List<SubmissionEntity>>>(LoadDataStatus.Loading())
     }
@@ -126,14 +133,17 @@ fun SubmissionHistoryScreen(
                     }
                     when (submissionsState.value) {
                         is LoadDataStatus.Success -> {
-                            val submissions = (submissionsState.value as LoadDataStatus.Success).data
-                                ?: return@CompositionLocalProvider
+                            val submissions =
+                                (submissionsState.value as LoadDataStatus.Success).data
+                                    ?: return@CompositionLocalProvider
 
-                            SubmissionHistoryContent(submissions, onNavigateToResult = { id, submission ->
-                                workSheetState.value.data?.let { worksheetData ->
-                                    onNavigateToResult(id, submission, worksheetData)
-                                }
-                            })
+                            SubmissionHistoryContent(
+                                submissions,
+                                onNavigateToResult = { id, submission ->
+                                    workSheetState.value.data?.let { worksheetData ->
+                                        onNavigateToResult(id, submission, worksheetData)
+                                    }
+                                })
                         }
 
                         is LoadDataStatus.Error -> {
@@ -164,14 +174,17 @@ fun SubmissionHistoryContent(
         contentPadding = PaddingValues(20.dp, 10.dp)
     ) {
         items(submissions, key = { it.id }) { submission ->
-            Column (
+            Column(
                 modifier = Modifier
                     .clip(MaterialTheme.shapes.medium)
                     .clickable {
                         onNavigateToResult(submission.id, submission)
                     }
                     .border(
-                        BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceTint.copy(alpha = .4f)),
+                        BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.surfaceTint.copy(alpha = .4f)
+                        ),
                         MaterialTheme.shapes.medium
                     )
                     .shadow(
@@ -186,10 +199,21 @@ fun SubmissionHistoryContent(
             ) {
                 val counts = submission.answers.size
                 Box {
-                    Column(Modifier.size(100.dp), Arrangement.Center, Alignment.CenterHorizontally) {
+                    Column(
+                        Modifier.size(100.dp),
+                        Arrangement.Center,
+                        Alignment.CenterHorizontally
+                    ) {
+                        val percentage = submission.correctAnswers!!.toDouble() /
+                                counts.toDouble() * 100
+                        val str = percentage.toBigDecimal().setScale(
+                            percentage.let { if (it < 100) 1 else 0 },
+                            RoundingMode.HALF_UP,
+                        ).toString()
+
                         Text(
-                            "${submission.totalPoints}",
-                            style = MaterialTheme.typography.headlineLarge,
+                            str,
+                            style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         HorizontalDivider(
@@ -228,8 +252,12 @@ fun SubmissionHistoryContent(
                 }
 
                 Spacer(Modifier.height(16.dp))
-                Column(Modifier.fillMaxWidth()){
-                    Text(submission.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Normal)
+                Column(Modifier.fillMaxWidth()) {
+                    Text(
+                        submission.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Normal
+                    )
                     Text(
                         stringResource(
                             R.string.submission_card_desc,
@@ -250,15 +278,22 @@ private const val TAG = "Prodigi.SubmissionHistories"
 suspend fun loadSubmissionHistory(
     worksheetUUID: String,
     submissions: MutableStateFlow<LoadDataStatus<List<SubmissionEntity>>>,
-    repo: ProdigiRepositoryImpl
+    repo: ProdigiRepositoryImpl,
 ) {
     try {
         repo.getSubmissionsHistories(worksheetUUID).collectLatest { data ->
             submissions.update { data }
-            Log.i(TAG, "[loadSubmissionHistory] Load Submission History for $worksheetUUID")
+            Log.i(
+                TAG,
+                "[loadSubmissionHistory] Load Submission History for $worksheetUUID"
+            )
         }
     } catch (e: Exception) {
-        Log.e(TAG, "[loadSubmissionHistory] Error loading submission history for $worksheetUUID", e)
+        Log.e(
+            TAG,
+            "[loadSubmissionHistory] Error loading submission history for $worksheetUUID",
+            e
+        )
         submissions.update { LoadDataStatus.Error("$e") }
     }
 }
@@ -269,7 +304,7 @@ fun SubmissionHistoryPreview(modifier: Modifier = Modifier) {
     val submissions = listOf(
         SubmissionEntity(
             0, "name", "13", "6A", "School Name",
-            List(10) { 1 }, 8, 40,
+            List(10) { Answer.Single(1) }, 8, 40,
             "worksheetUUID"
         )
     )
