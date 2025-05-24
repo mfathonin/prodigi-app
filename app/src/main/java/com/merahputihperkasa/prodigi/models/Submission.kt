@@ -79,11 +79,13 @@ sealed class Answer {
     data object None : Answer()
 }
 
+@Keep
 class AnswerListConverter {
     private val gson: Gson = Gson()
     private val listType =
         object : TypeToken<List<Any?>>() {}.type // Type for deserializing the mixed list
 
+    @Keep
     @TypeConverter
     fun fromString(value: String): List<Answer> {
         return try {
@@ -111,6 +113,7 @@ class AnswerListConverter {
         }
     }
 
+    @Keep
     @TypeConverter
     fun toString(list: List<Answer>): String {
         val simplifiedList = list.map { answer ->

@@ -25,3 +25,11 @@
 -keep,allowobfuscation,allowshrinking class retrofit2.**
 -keep,allowobfuscation,allowshrinking class kotlin.coroutines.** { *; }
 
+-keepattributes Signature
+-keepattributes InnerClasses
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
+
+# Keep your model classes (though @Keep should handle this)
+-keep class com.merahputihperkasa.prodigi.models.** { *; }
+-keepclassmembers class com.merahputihperkasa.prodigi.models.** { *; }
