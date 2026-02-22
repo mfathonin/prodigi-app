@@ -11,6 +11,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.merahputihperkasa.prodigi.BuildConfig
 import sv.lib.squircleshape.CornerSmoothing
 import sv.lib.squircleshape.SquircleShape
 
@@ -44,7 +45,7 @@ private val LightColorScheme = lightColorScheme(
 fun ProdigiBookReaderTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = BuildConfig.BRAND_ENABLE_DYNAMIC_COLOR,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

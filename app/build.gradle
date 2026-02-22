@@ -12,12 +12,43 @@ android {
     namespace 'com.merahputihperkasa.prodigi'
     compileSdk 35
 
+    def envOrProperty = { String key, String defaultValue ->
+        def gradleValue = providers.gradleProperty(key).orNull
+        if (gradleValue != null && !gradleValue.isBlank()) {
+            return gradleValue
+        }
+
+        def envValue = System.getenv(key)
+        if (envValue != null && !envValue.isBlank()) {
+            return envValue
+        }
+
+        return defaultValue
+    }
+
     defaultConfig {
-        applicationId "com.merahputihperkasa.prodigi"
+        applicationId envOrProperty("APP_APPLICATION_ID", "com.merahputihperkasa.prodigi")
         minSdk 23
         targetSdk 35
         versionCode 9
         versionName '2.2.3'
+
+        manifestPlaceholders = [
+                appIcon     : envOrProperty("APP_ICON", "ic_launcher"),
+                appRoundIcon: envOrProperty("APP_ROUND_ICON", "ic_launcher")
+        ]
+
+        resValue "string", "config_app_name", envOrProperty("APP_NAME", "Prodigi Book Reader")
+
+        buildConfigField "String", "BRAND_PRIMARY_LIGHT", "\"${envOrProperty('BRAND_PRIMARY_LIGHT', '#818DE4')}\""
+        buildConfigField "String", "BRAND_PRIMARY_DARK", "\"${envOrProperty('BRAND_PRIMARY_DARK', '#454F9B')}\""
+        buildConfigField "String", "BRAND_SECONDARY_LIGHT", "\"${envOrProperty('BRAND_SECONDARY_LIGHT', '#9EA8BA')}\""
+        buildConfigField "String", "BRAND_SECONDARY_DARK", "\"${envOrProperty('BRAND_SECONDARY_DARK', '#5E6676')}\""
+        buildConfigField "String", "BRAND_TERTIARY_LIGHT", "\"${envOrProperty('BRAND_TERTIARY_LIGHT', '#7ED5EF')}\""
+        buildConfigField "String", "BRAND_TERTIARY_DARK", "\"${envOrProperty('BRAND_TERTIARY_DARK', '#428DA4')}\""
+        buildConfigField "String", "BRAND_SURFACE_LIGHT", "\"${envOrProperty('BRAND_SURFACE_LIGHT', '#FAFAFA')}\""
+        buildConfigField "String", "BRAND_SURFACE_DARK", "\"${envOrProperty('BRAND_SURFACE_DARK', '#141D35')}\""
+        buildConfigField "boolean", "BRAND_ENABLE_DYNAMIC_COLOR", envOrProperty("BRAND_ENABLE_DYNAMIC_COLOR", "false")
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -27,6 +58,34 @@ android {
 
         ndk {
             debugSymbolLevel 'FULL'
+        }
+    }
+
+    flavorDimensions += "brand"
+    productFlavors {
+        prodigi {
+            dimension "brand"
+        }
+        custom {
+            dimension "brand"
+            applicationId envOrProperty("CUSTOM_APPLICATION_ID", envOrProperty("APP_APPLICATION_ID", "com.merahputihperkasa.prodigi.custom"))
+
+            manifestPlaceholders = [
+                    appIcon     : envOrProperty("CUSTOM_APP_ICON", envOrProperty("APP_ICON", "ic_launcher")),
+                    appRoundIcon: envOrProperty("CUSTOM_APP_ROUND_ICON", envOrProperty("APP_ROUND_ICON", "ic_launcher"))
+            ]
+
+            resValue "string", "config_app_name", envOrProperty("CUSTOM_APP_NAME", envOrProperty("APP_NAME", "Prodigi Book Reader"))
+
+            buildConfigField "String", "BRAND_PRIMARY_LIGHT", "\"${envOrProperty('CUSTOM_BRAND_PRIMARY_LIGHT', envOrProperty('BRAND_PRIMARY_LIGHT', '#818DE4'))}\""
+            buildConfigField "String", "BRAND_PRIMARY_DARK", "\"${envOrProperty('CUSTOM_BRAND_PRIMARY_DARK', envOrProperty('BRAND_PRIMARY_DARK', '#454F9B'))}\""
+            buildConfigField "String", "BRAND_SECONDARY_LIGHT", "\"${envOrProperty('CUSTOM_BRAND_SECONDARY_LIGHT', envOrProperty('BRAND_SECONDARY_LIGHT', '#9EA8BA'))}\""
+            buildConfigField "String", "BRAND_SECONDARY_DARK", "\"${envOrProperty('CUSTOM_BRAND_SECONDARY_DARK', envOrProperty('BRAND_SECONDARY_DARK', '#5E6676'))}\""
+            buildConfigField "String", "BRAND_TERTIARY_LIGHT", "\"${envOrProperty('CUSTOM_BRAND_TERTIARY_LIGHT', envOrProperty('BRAND_TERTIARY_LIGHT', '#7ED5EF'))}\""
+            buildConfigField "String", "BRAND_TERTIARY_DARK", "\"${envOrProperty('CUSTOM_BRAND_TERTIARY_DARK', envOrProperty('BRAND_TERTIARY_DARK', '#428DA4'))}\""
+            buildConfigField "String", "BRAND_SURFACE_LIGHT", "\"${envOrProperty('CUSTOM_BRAND_SURFACE_LIGHT', envOrProperty('BRAND_SURFACE_LIGHT', '#FAFAFA'))}\""
+            buildConfigField "String", "BRAND_SURFACE_DARK", "\"${envOrProperty('CUSTOM_BRAND_SURFACE_DARK', envOrProperty('BRAND_SURFACE_DARK', '#141D35'))}\""
+            buildConfigField "boolean", "BRAND_ENABLE_DYNAMIC_COLOR", envOrProperty("CUSTOM_BRAND_ENABLE_DYNAMIC_COLOR", envOrProperty("BRAND_ENABLE_DYNAMIC_COLOR", "false"))
         }
     }
 
